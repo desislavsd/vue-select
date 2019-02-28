@@ -1,10 +1,33 @@
 {
-  "name": "vue-select",
-  "version": "0.1.0",
-  "private": true,
+  "name": "@desislavsd/vue-select",
+  "description": "Vue select component like Select2 done the Vue way.",
+  "author": "desislavsd",
+  "main": "./dist/vue-select.common.js",
+  "browser": "./dist/vue-select.umd.min.js",
+  "files": [
+    "dist/*",
+    "src/*",
+    "*.json",
+    "*.js",
+    "*.md"
+  ],
+  "version": "0.0.1",
+  "license": "MIT",
+  "private": false,
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/desislavsd/vue-select.git"
+  },
+  "bugs": {
+    "url": "https://github.com/desislavsd/vue-select/issues"
+  },
+  "homepage": "https://github.com/desislavsd/vue-select#readme",
   "scripts": {
     "serve": "vue-cli-service serve",
     "build": "vue-cli-service build",
+    "build-lib": "vue-cli-service build --target lib --name vue-select ./src/plugins/select/index.js",
+    "version": "npm version patch",
+    "publish": "npm publish --access public",
     "lint": "vue-cli-service lint"
   },
   "dependencies": {
