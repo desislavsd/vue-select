@@ -240,7 +240,7 @@ export default {
 
             let q = this.q.toLowerCase();
             
-            return !q ? -1 : this.filtered.findIndex( e => e.label.toLowerCase() == q )
+            return !q ? -1 : this.filtered.findIndex( e => (e.label + '').toLowerCase() == q )
         }
     },
 
