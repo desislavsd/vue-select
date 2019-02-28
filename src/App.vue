@@ -7,7 +7,7 @@
       <br>
       <br>
       <!-- <v-select v-model="items" as="name:id:id" :tag-keys="[9, 32, 188]" options="/dist/repositories.json?q=" parse="items" /> -->
-      <v-select v-model="items" :tag-keys="[9, 32, 188]" :options="[1,2,3,4]" />
+      <v-select v-model="items" :tag-keys="[9, 32, 188]" :options="[1,2,3,4]" tagging />
       <br>
       <!-- <v-select v-model="item" as="name:id:id" :tag-keys="[9, 32, 188]" options="/dist/repositories.json?q=" parse="items" /> -->
       <br>

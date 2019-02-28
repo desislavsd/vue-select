@@ -74,6 +74,10 @@ export function debounce(t, f, defaults) {
 
 export let me = e => e;
 
+export function elMatches(el, ...args){
+    return (Element.prototype.matches || Element.prototype.msMatchesSelector || Element.prototype.webkitMatchesSelector).apply(el, args);
+}
+
 function parsePath(path){
 
     return Array.isArray(path) ? path : path.split('.').filter(Boolean)

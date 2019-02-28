@@ -50,7 +50,7 @@
  *   wait for another press to clear tags/value
  */
 
-import { mid, fetchAdapter, model, isset, debounce, me, error } from '../utils'
+import { mid, fetchAdapter, model, isset, debounce, me, error, elMatches } from '../utils'
 
 import vSelectOption from './option';
 import vSelectSelected from './selected'
@@ -497,14 +497,14 @@ export default {
 
             if(!this.$el) return this;
 
-            let el = this.$el.matches(':focus') ? this.$el : this.$el.querySelector(':focus');
+            let el = elMatches(this.$el, ':focus') ? this.$el : this.$el.querySelector(':focus');
 
             return el && el.blur(), this;
         },
 
         checkFocus(){
 
-            let focus = this.$el.matches(':focus') || !!this.$el.querySelector(':focus');
+            let focus = elMatches(this.$el, ':focus') || !!this.$el.querySelector(':focus');
 
             if( this.flags.focused != focus ) {
                 this.flags.focused = focus;

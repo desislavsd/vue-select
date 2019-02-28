@@ -18,5 +18,5 @@ export default VueSelect = {
     }
 }
 
-if(typeof window != 'undefined' && typeof window.Vue != 'undefined')
+if(typeof window != 'undefined')
     window.VueSelect = VueSelect
