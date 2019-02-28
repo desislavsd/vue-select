@@ -11,25 +11,6 @@ export function mid(min, val, max) {
     return Math.min(Math.max(min, val), max)
 }
 
-/**
- * Returns a promise extended with resolve/reject methods
- * so that its state may be triggered from outside
- * @returns Promise
- */
-export function Deferred() {
-    let resolve, reject;
-
-    return Object.assign(
-        new Promise((rs, rj) => {
-            resolve = rs;
-            reject = rj;
-        }), {
-            resolve,
-            reject
-        }
-    )
-}
-
 export function set(path, o, val) {
 
     path = parsePath(path)
@@ -42,10 +23,10 @@ export function set(path, o, val) {
 export function get(path, o, val){
     path = parsePath(path)
 
-    let i = -1, g = o, len = path.length, set = arguments.length > 2;
+    let i = -1, len = path.length, set = arguments.length > 2;
     
     while (++i < len){
-        o = o[path[i]];
+        let g = o; o = o[path[i]];
 
         if(typeof o == 'object') continue;
         

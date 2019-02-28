@@ -1,5 +1,5 @@
 <template>
-    <button type="button" tabindex="-1" class="v-select-btn v-select-selected" @mouseup.left="$emit('deselect')">
+    <button type="button" class="v-select-btn v-select-selected" tabindex="-1">
         <slot>{{option.label}}</slot>
     </button>
 </template>
@@ -18,14 +18,15 @@ export default {
             position absolute
             overflow hidden
             text-overflow ellipsis
-        &.--multiple .v-select-selected
+            line-height 0
+        &.-multiple .v-select-selected
             background var(--c-theme)
             border-color rgba(0,0,0,.1)
             position static
-        &.--searching:not(.--multiple) .v-select-selected
+        &.-searching:not(.-multiple) .v-select-selected
             opacity 0
-        &.--opened:not(.--multiple):not(.--searching) .v-select-selected
-            opacity 0.6
-        &:focus-within:not(.--multiple):not(.--searching) .v-select-selected
-            opacity 0.6
+        &:not(.-multiple):not(.-searching) 
+            &.-opened, &.-focused
+                .v-select-selected
+                    opacity 0.6
 </style>

@@ -3,9 +3,12 @@
     <form @submit.prevent="log('submit')">
 
       items: {{items}}
-      <v-select v-model="items" as="name:id:id" :tag-keys="[9, 32, 188]" @create="log" options="/repositories.json?q=%s" parse="items" />
       <br>
-      <v-select v-model="item" as="name:id:id" :tag-keys="[9, 32, 188]" autofocus @create="log" options="/repositories.json?q=" parse="items" />
+      <br>
+      <br>
+      <v-select v-model="items" as="name:id:id" :tag-keys="[9, 32, 188]" options="/dist/repositories.json?q=" parse="items" />
+      <br>
+      <v-select v-model="item" as="name:id:id" :tag-keys="[9, 32, 188]" options="/dist/repositories.json?q=" parse="items" />
       <br>
       <br>
       <input type="text">
@@ -26,7 +29,8 @@ export default {
   components: { 
     vSelect: vSelect || { mixins: [vSelect], components: { vSelectOption: { functional: true, render(h, {slots}){
       return h('a', slots().default)
-    }}} }
+    }}} },
+
   },
   data(){
     return {
@@ -37,6 +41,19 @@ export default {
 }
 </script>
 <style lang="stylus">
+::-webkit-scrollbar
+    width 5px
+    background rgba(0,0,0,.1)
+::-moz-scrollbar
+    width 5px
+::-webkit-scrollbar-thumb
+    background: rgba(0,0,0,.2)
+::-moz-scrollbar-thumb
+    background: rgba(0,0,0,.2)
+:not(:hover)::-webkit-scrollbar, :not(:hover)::-webkit-scrollbar-thumb
+    visibility hidden 
+:not(:hover)::-moz-scrollbar, :not(:hover)::-moz-scrollbar-thumb
+    visibility hidden
 #app
   font-family 'Avenir', Helvetica, Arial, sans-serif
   -webkit-font-smoothing antialiased

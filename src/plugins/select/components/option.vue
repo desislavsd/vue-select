@@ -1,5 +1,5 @@
 <template>
-    <a class="v-select-option" @mouseup.left="$emit('select')" :class="classes"><slot>{{option.label}}</slot></a>
+    <a class="v-select-option" :class="classes"><slot>{{option.label}}</slot></a>
 </template>
 
 <script>
@@ -9,8 +9,8 @@ export default {
     computed: {
         classes(){
             return {
-                '--marked': this.state.marked == this.option,
-                '--selected': this.state.selected.includes(this.option),
+                '-marked': this.state.marked == this.option,
+                '-selected': this.state.selected.includes(this.option),
             }
         }
     }
@@ -23,8 +23,8 @@ export default {
         cursor pointer
         &:hover
             background #fafafa
-        &.--marked 
+        &.-marked 
             background #f0f0f0
-        &.--selected
+        &.-selected
             opacity 0.5
 </style>

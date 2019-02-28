@@ -1,11 +1,13 @@
 <template>
     <div class="v-select" :class="classes" tabindex="-1" 
-        @focusin="$refs.inp.focus()" 
-        @focusout="attemptClose()"
+        @focus="$refs.inp.focus()"
+        @mouseup.left="is_multiple && $refs.inp.focus()"
+        @focusin="checkFocus_()" 
+        @focusout="checkFocus_()"
         @keydown.down.prevent="next()"
         @keydown.up.prevent="next(true)"
-        @keydown.home.prevent="mark(false)"
-        @keydown.end.prevent="mark(true)"
+        @keydown.home.prevent="mark(0)"
+        @keydown.end.prevent="mark(Infinity)"
         @keydown.esc="mark().close()"
         @keydown.delete="onDelKey()"
         @keydown.enter="onKeyDownEnter"
@@ -14,34 +16,26 @@
         <div class="v-select-bar">
             
             <!-- SELECTED -->
-            <v-select-selected v-for="(option,i) in value_" :key="option.index" :option="option" :index="i" @deselect="deselect(i)">
+            <component :is="selectedComponent" v-for="(option,i) in value_" :key="option.index" :option="option" :index="i" @mouseup.left.native="deselect(i)">
                 <slot name="selected" :option="option" :index="i" />
-            </v-select-selected>
+            </component>
 
             <!-- SEARCH INPUT -->
             <input ref="inp" v-model.trim="q" v-bind="$attrs" class="v-select-inp"
                 @focus="open().search()" @keydown="onKeyDown" @input="open()" :placeholder="placeholder" />
 
             <!-- ACTION BUTTONS -->
-            <!-- <button @click="clear()" type="button" class="v-select-btn-close" tabindex="-1"></button> -->
+            <button @mousedown="clear()" type="button" class="v-select-btn-close" tabindex="-1"></button>
             <button @click="open()" type="button" class="v-select-btn-dd" tabindex="-1"></button>
             
         </div>
 
-        <!-- DROPDOWN -->
-        <!-- <ul class="v-select-list">
-            <li v-if="busy"><v-select-loader :phrase="queue.q"><slot name="loader" :phrase="queue.q" /></v-select-loader></li>
-            <li v-for="(option, i) in filteredOptions" :key="option.index"  :ref="'option' + i">
-                <v-select-option @select="select(option)" :option="option" :index="i" :state="state">
-                    <slot name="option" :option="option" :index="i" :state="state"/>
-                </v-select-option>
-            </li>
-        </ul> -->
         <div class="v-select-list">
-            <v-select-loader v-if="busy" :phrase="queue.q"><slot name="loader" :phrase="queue.q" /></v-select-loader>
-            <v-select-option v-for="(option, i) in filteredOptions" :key="option.index"  :ref="'option' + i" @select="select(option)" :option="option" :index="i" :state="state">
+            <component :is="loaderComponent" v-if="flags.fetching" :phrase="queue.q"><slot name="loader" :phrase="queue.q" /></component>
+
+            <component :is="optionComponent" v-for="(option, i) in filtered" :key="option.index" :ref="'option' + i" :option="option" :index="i" :state="state" @mouseup.left.native="select(option)">
                 <slot name="option" :option="option" :index="i" :state="state"/>
-            </v-select-option>
+            </component>
         </div>
 
     </div>
@@ -50,40 +44,13 @@
 <script>
 /**
  * TODO:
- * + highlight instead of filtering out selected options
- *   and deselect them on select attempt
- * 
- * - maybe add chevron to the right
- * 
- * - on open scroll to marked 
- * 
- * + if no async -> load options on created()
- * 
- * - find a way to add click events on sloted elements
- * 
- * + fix :hover, .marked, .selected options styles
- * 
  * - pagination
- * 
- * + emit event for new options creation when tagging
- * 
- * - mark the first result when searching
- * 
- * - find a way to recognize new options*
- * 
- * - prevent form submission when tagging / selecting
- * 
- * - use customisable components as default slots content
- * 
- * - loading design ?
  * 
  * - when hold down backspace/delete delete only q & 
  *   wait for another press to clear tags/value
- * 
- * - markMatch is not working fine with async options
  */
-// eslint-disable-next-line
-import { mid, fetchAdapter, Deferred as dfd, model, isset, isPrimitive, debounce, me, error } from '../utils'
+
+import { mid, fetchAdapter, model, isset, debounce, me, error } from '../utils'
 
 import vSelectOption from './option';
 import vSelectSelected from './selected'
@@ -164,6 +131,10 @@ export default {
         tagging: [Boolean, String],
 
         tagKeys: {type: Array, default: () => [] },
+
+        optionComponent: { default: 'vSelectOption' },
+        selectedComponent: { default: 'vSelectSelected' },
+        loaderComponent: { default: 'vSelectLoader' },
     },
 
     inheritAttrs: false,
@@ -171,16 +142,17 @@ export default {
     data(){
         return {
             q: '',
-            opened: false,
             marked: -1,
             queue: null,
-            busy: false,
+            flags: {
+                loading: false,
+                focused: false,
+                opened: false,
+            },
             value_: [],
             options_: [],
-            AS: {
-                rx: /\s*[,:]\s*/,
-                order: 'label:value:index'.split(':')
-            }
+            asSpec: { rx: /\s*[,:]\s*/, order: 'label:value:index'.split(':') },
+            checkFocus_: debounce(10, this.checkFocus)
         }
     },
 
@@ -208,20 +180,20 @@ export default {
          */
         as_(){
 
-            let as = this.as && this.as.split(this.AS.rx);
+            let as = this.as && this.as.split(this.asSpec.rx);
 
             if(!as) return;
             
-            as = this.AS.order
+            as = this.asSpec.order
                 .map( (e, i) => as[i] && model(as[i]) )
-                .reduce( (m, e, i) => ({ ...m,  [this.AS.order[i]]: e }), {})
+                .reduce( (m, e, i) => ({ ...m,  [this.asSpec.order[i]]: e }), {})
 
             as.index = as.index || as.value || error('`index` field is required when working with non primitive options');
 
             return as;
         },
         
-        filteredOptions(){
+        filtered(){
 
             let { q } = this;
             
@@ -234,23 +206,24 @@ export default {
 
         state(){
             return {
-                opened: this.opened,
-                busy: this.busy,
+                ...this.flags,
                 multiple: this.is_multiple,
                 searching: !!this.q,
                 empty: !this.value_.length,
-                marked: this.filteredOptions[this.marked],
+                marked: this.filtered[this.marked],
                 selected: this.value_
             }
         },
         classes(){
             let { state } = this;
             return {
-                '--opened': state.opened, 
-                '--busy': state.busy, 
-                '--multiple': state.multiple,
-                '--searching': state.searching,
-                '--empty': state.empty
+                '-empty': state.empty, 
+                '-opened': state.opened, 
+                '-focused': state.focused,
+                '-loading': state.loading, 
+                '-multiple': state.multiple,
+                '-selected': state.selected.length,
+                '-searching': state.searching,
             }
         },
         debouncedSearch(){
@@ -262,6 +235,12 @@ export default {
         },
         placeholder(){
             return this.value_.length && !this.is_multiple ? '' : this.$attrs.placeholder || 'Search..'
+        },
+        matched(){
+
+            let q = this.q.toLowerCase();
+            
+            return !q ? -1 : this.filtered.findIndex( e => e.label.toLowerCase() == q )
         }
     },
 
@@ -279,27 +258,29 @@ export default {
             this.queue = null;
         },
 
-        options_(val, old){
-            this.syncValue();
-        },
+        options_: 'syncValue',
 
-        filteredOptions(){
+        filtered(){
             
-            this.markMatch()
+            this.mark(true)
         },
 
         q: 'debouncedSearch',
 
         queue(promise){
             
-            this.busy = promise && !!promise.finally( () => this.busy = promise != this.queue )
+            this.flags.fetching = promise && !!promise.finally( () => this.flags.fetching = promise != this.queue )
+        },
+
+        'flags.focused'(focus){
+            return focus ? this.open() : this.close();
         }
     },
 
     methods: {
         async search(){
 
-            let { options, q } = this, queue, old = this.queue;
+            let { options, q } = this, queue;
             
             // do not proceed if the result is cached 
             if(this.queue && (!this.is_dynamic || ( this.queue.q == q) ) ) return;
@@ -332,11 +313,14 @@ export default {
             return this.search();
         },
 
+        /**
+         * Construct v-select option from raw option
+         */
         ofRaw(raw){
 
             let as = this.as_;
 
-            let option = this.AS.order.reduce((m, e) => ({
+            let option = this.asSpec.order.reduce((m, e) => ({
                 ...m,
                 [e]: as && as[e] ? as[e](raw) : raw
             }), { raw });
@@ -354,6 +338,9 @@ export default {
             return option;
         },
 
+        /**
+         * Construct v-select option from raw option's value
+         */
         ofValue(value){
 
             if(this.is_primitive) return this.ofRaw(value);
@@ -367,6 +354,9 @@ export default {
             return option;
         },
 
+        /**
+         * Construct v-select option from phrase
+         */
         ofPhrase(q){
 
             if(this.is_primitive) return this.ofRaw(q);
@@ -404,6 +394,10 @@ export default {
             this.is_multiple || this.blur()
         },
 
+        /**
+         * Deselect option by its index
+         * @param {Number} index Index of the option in `value_`
+         */
         deselect(index){
 
             if(!this.is_multiple) return this.clear();
@@ -415,16 +409,26 @@ export default {
             this.$emit('input', value)
         },
 
+        /**
+         * Clears model value
+         */
         clear(){
 
             this.$emit('input', this.is_multiple ? [] : undefined)
         },
-
+        
+        /**
+         * Check if option is already selected
+         * @param {Object} option option to be checked
+         */
         exists(option){
 
             return this.value_.some( e => this.equals(e, option))
         },
 
+        /**
+         * Calculates `value_` from model's value
+         */
         syncValue(){
             
             if(!isset(this.value)) return this.value_ = [];
@@ -435,14 +439,17 @@ export default {
                 .map( val => options.find( option => this.equals(val, option) ) || val );
         },
 
+        /**
+         * Mark an option at given index for selection.
+         * @param {Number, Boolean} i Index of the option to be marked or `true` to mark the exact match with `q`
+         */
         mark(i){
             // use false/true to mark first/last option
-            if(!arguments.length) i = -1
-            else if( i === false ) i = 0; 
-            else if ( i === true ) i = Infinity;
+            if(!arguments.length || i === false) i = -1
+            else if ( i === true ) i = this.matched;
 
             // assure `i` is a valid index
-            i = this.marked = mid(-1, i, this.filteredOptions.length - 1);
+            i = this.marked = mid(-1, i, this.filtered.length - 1);
 
             if(~i){
                 let li = this.$refs['option' + i];
@@ -451,23 +458,18 @@ export default {
             
             return this;
         },
-        
-        markMatch(){
 
-            let q = this.q.toLowerCase(),
-                options = this.filteredOptions,
-                match = options.findIndex( e=> e.label.toLowerCase() == q );
-            
-            if(~match) return this.mark(match);
-
-            return this//.mark()
-        },
-
+        /**
+         * Marks next/previous option of the current marked option
+         */
         next(prev = false){
-            if(!this.opened) return this.open()
+            if(!this.flags.opened) return this.open()
             this.mark(this.marked + (-1)**prev)
         },
 
+        /**
+         * Checks if two options are equal
+         */
         equals(a,b){
 
             if(a.index === b.index) return true;
@@ -480,36 +482,44 @@ export default {
         },
 
         open(){ 
-            if(this.opened) return this;
-            this.opened = true; 
-            return this.markMatch(); 
+            if(this.flags.opened) return this;
+            this.flags.opened = true; 
+            return this.mark(true); 
         },
 
-        close(){ 
-            this.opened = false; 
+        close(){
+            this.flags.opened = false; 
             if(!this.is_multiple) this.q = '';
             return this; 
         },
 
         blur(){
-            return this.$refs.inp && this.$refs.inp.blur(), this;
+
+            if(!this.$el) return this;
+
+            let el = this.$el.matches(':focus') ? this.$el : this.$el.querySelector(':focus');
+
+            return el && el.blur(), this;
         },
-        
-        attemptClose(){
+
+        checkFocus(){
+
+            let focus = this.$el.matches(':focus') || !!this.$el.querySelector(':focus');
+
+            if( this.flags.focused != focus ) {
+                this.flags.focused = focus;
+            }
             
-            return this.$el.matches(':focus') 
-                || this.$el.querySelector(':focus') 
-                || this.close(), this
+            return this;
         },
 
         onDelKey(){
 
             if(this.q) return;
 
-            let len = this.value_.length,
-                tag = this.value_[len-1]
+            let len = this.value_.length;
 
-            len ? this.deselect(len - 1) : this.clear();
+            len && this.is_multiple ? this.deselect(len - 1) : this.clear();
         },
 
         onKeyDownEnter(ev){
@@ -518,19 +528,17 @@ export default {
             
             ev.preventDefault();
 
-            let option = this.filteredOptions[this.marked];
-            console.log(option || this.ofPhrase(this.q));
+            let option = this.filtered[this.marked];
             
             this.select(option || this.ofPhrase(this.q), !option);
         },
         
         onKeyDown(ev){
             
-            if(
-                   !this.is_tagging 
+            if( !this.is_tagging 
                 || !this.q 
-                || !this.tagKeys.includes(ev.which)
-                || (~this.marked && this.filteredOptions[this.marked].label === this.q)
+                || !this.tagKeys.includes(ev.which || ev.keyCode || 0)
+                || (~this.marked && this.filtered[this.marked].label === this.q)
             ) return;
             
             ev.preventDefault(), ev.stopPropagation();
@@ -549,45 +557,52 @@ export default {
 </script>
 <style lang="stylus">
     // TODO: add css variables for theming
-    $radius = $padding = 3px
     .v-select
         --c-base: #fff
         --c-theme: #f0f0f0
         --c-border: #ccc
+        --radius: 1.5em
+        --radius: 0.2em
+        --padd: 3px
+        font-size 12px
         &, *, :before, :after
             box-sizing border-box
             margin 0
+
+    .v-select
         position relative
         outline none
-        height 2em
-        padding: $padding
+        height 3em
+        padding: var(--padd)
         border 1px solid var(--c-border)
-        border-radius: $radius
+        border-radius: var(--radius)
         background var(--c-base)
         .v-select-selected
             &:first-of-type
-                border-radius: $radius 0 0 $radius
+                border-radius: var(--radius) 0 0 var(--radius)
             &:nth-of-type(n+2)
-                margin-left: $padding
+                margin-left: var(--padd)
         .v-select-bar
             position relative
             height 100%
             display flex
             align-items stretch
             white-space nowrap
-        &.--opened
-            box-shadow 0 3px 3px rgba(0,0,0,0.16), 0 3px 3px rgba(0,0,0,0.23)
-        &:not(.--opened) .v-select-list
+        &.-opened
+            box-shadow 0 3px 6px rgba(0,0,0,0.16)
+            border-radius: var(--radius) var(--radius) 0 0
+        &:not(.-opened) .v-select-list
             visibility hidden
         .v-select-inp
             flex 1
-            min-width 10em
+            min-width 40%
             border none
             background none
             padding 0 .5em
             outline none
             position relative
             z-index 1
+            line-height 0
             &[readonly]
                 cursor default
         [class*="v-select-btn"]
@@ -596,28 +611,31 @@ export default {
             background transparent
             border 1px solid transparent
             cursor pointer
+            outline none
+            line-height 0
         
-        .v-select-btn-close:before
-            content '\00D7'
-        .v-select-btn-dd
-            font-size 0.6em
+        .v-select-btn-close
             &:before
+                content '\00D7'
+                font-size 1.2em
+            &:not(:hover)
+                opacity 0.6
+        .v-select-btn-dd:before
                 content: ''
-                display: inline-block;
+                display: block;
                 border: solid transparent;
                 border-top-color: #000;
-                border-width: .7em .4em 0;
+                border-width: 0.5em 0.3em 0;
                 opacity: .8;
-        &.--empty .v-select-btn-close
+        &.-empty .v-select-btn-close
             display none
-        &.--opened .v-select-btn-dd 
+        &.-opened .v-select-btn-dd 
             display none
 
         .v-select-list
             list-style none
             z-index 4
             position absolute
-            min-width 100%
             top 100%
             left -1px
             right -1px
@@ -633,19 +651,6 @@ export default {
             padding-top 0
             font-size 12px
             box-shadow inherit
-        ::-webkit-scrollbar
-            width 5px
-            background rgba(0,0,0,.1)
-        ::-moz-scrollbar
-            width 5px
-        ::-webkit-scrollbar-thumb
-            background: rgba(0,0,0,.2)
-        ::-moz-scrollbar-thumb
-            background: rgba(0,0,0,.2)
-        :not(:hover)::-webkit-scrollbar, :not(:hover)::-webkit-scrollbar-thumb
-            visibility hidden 
-        :not(:hover)::-moz-scrollbar, :not(:hover)::-moz-scrollbar-thumb
-            visibility hidden
-        // @media (pointer: fine)
+            border-radius: 0 0 var(--radius) var(--radius)
 </style>
 

@@ -4,9 +4,9 @@ export * from './utils'
 
 export { vSelect }
 
-let installed = 0, Plugin;
+let installed = 0, VueSelect;
 
-export default Plugin = {
+export default VueSelect = {
 
     install(Vue, { name = 'vSelect', mixin = {} } = {} ){
 
@@ -19,4 +19,4 @@ export default Plugin = {
 }
 
 if(typeof window != 'undefined' && typeof window.Vue != 'undefined')
-    window.Vue.use(Plugin)
+    window.VueSelect = VueSelect
