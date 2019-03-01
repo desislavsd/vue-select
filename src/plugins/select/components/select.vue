@@ -254,8 +254,8 @@ export default {
             immediate: true,
             handler(){
                 this.syncValue();
-                if(!this.is_multiple && isset(this.value)) this.blur();
                 this.q = '';
+                if(!this.is_multiple && isset(this.value)) this.close().blur();
             }
         },
 
