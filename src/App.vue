@@ -6,7 +6,7 @@
       <br>
       <br>
       <br>
-      <!-- <v-select v-model="items" :as="[label, 'id', 'id']" tagging options="/dist/repositories.json?q=" parse="items" /> -->
+      <v-select v-model="items" as="name:id:id" tagging options="/dist/repositories.json?q=" parse="items" />
       <v-select v-model="item" :options="browsers" />
       <br>
       <!-- <v-select v-model="item" as="name:id:id" :tag-keys="[9, 32, 188]" options="/dist/repositories.json?q=" parse="items" /> -->

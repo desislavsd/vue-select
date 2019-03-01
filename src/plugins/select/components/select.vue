@@ -30,7 +30,7 @@
             
         </div>
 
-        <div class="v-select-list">
+        <div class="v-select-list" ref="list">
             <component :is="loaderComponent" v-if="flags.fetching" :phrase="queue.q"><slot name="loader" :phrase="queue.q" /></component>
 
             <component :is="optionComponent" v-for="(option, i) in filtered" :key="option.index" :ref="'option' + i" :option="option" :index="i" :state="state" @mouseup.left.native="select(option)">
@@ -461,8 +461,10 @@ export default {
             i = this.marked = mid(-1, i, this.filtered.length - 1);
 
             if(~i){
-                let li = this.$refs['option' + i];
-                li && li[0] && (li[0].$el || li[0]).scrollIntoView({behavior: 'smooth'})
+                let li = this.$refs['option' + i][0].$el;
+
+                this.$refs.list.scrollTop = Math.round(li.offsetTop + li.offsetHeight - this.$refs.list.offsetHeight/2)
+                // li.scrollIntoView({behavior: 'smooth'})
             }
             
             return this;
