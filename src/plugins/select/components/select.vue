@@ -8,7 +8,7 @@
         @keydown.up.prevent="next(true)"
         @keydown.home.prevent="mark(0)"
         @keydown.end.prevent="mark(Infinity)"
-        @keydown.esc="mark().close()"
+        @keydown.esc="~marked ? mark() : close()"
         @keydown.delete="onDelKey()"
         @keydown.enter="onKeyDownEnter"
         @mousedown.left="open()">
@@ -200,9 +200,9 @@ export default {
         filtered(){
 
             let { q } = this,
-                filter = typeof this.filter == 'function' ? this.filter : filterBy ;
+                filter = typeof this.filter == 'function' ? this.filter : filterBy;
             
-            return (!this.filter) || (this.is_dynamic || !q.length || !this.filter)
+            return isset(this.filter) ? !!this.filter : (this.is_dynamic || !q.length)
                 ? this.options_ 
                 : this.options_.filter( option => {
                     return filter.call(this, option, q)

@@ -4,11 +4,10 @@
 
       items: {{items}}
       <br>
-      {{item}}
       <br>
       <br>
       <!-- <v-select v-model="items" :as="[label, 'id', 'id']" tagging options="/dist/repositories.json?q=" parse="items" /> -->
-      <v-select v-model="items" :tags.sync="item" :options="[1,2,3,4]" tagging />
+      <v-select v-model="item" :options="browsers" />
       <br>
       <!-- <v-select v-model="item" as="name:id:id" :tag-keys="[9, 32, 188]" options="/dist/repositories.json?q=" parse="items" /> -->
       <br>
@@ -35,17 +34,7 @@ export default {
     return {
       item: undefined,
       items: [],
-      label: (e, ...args) => {
-        if(!args.length) {
-          return [e.id, e.name].filter(Boolean).join(': ')
-        }
-        let v = (args[0] + '' || '').split(': ');
-        console.log(e, v);
-        
-        if(v[1]) model('id')(e, v[0])
-
-        model('name')(e, v[v.length - 1]);
-      }
+      browsers: ['Internet Explorer', 'Firefox', 'Chrome', 'Opera', 'Safari']
     }
   },
 }
