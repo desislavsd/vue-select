@@ -11,7 +11,7 @@
     "*.js",
     "*.md"
   ],
-  "version": "0.0.3",
+  "version": "0.0.5",
   "license": "MIT",
   "private": false,
   "repository": {
