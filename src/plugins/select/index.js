@@ -15,8 +15,10 @@ export default VueSelect = {
         Vue.component(name, {
             mixins: [mixin, vSelect]
         })
-    }
+    },
+
+    vSelect,
 }
 
-if(typeof window != 'undefined')
+if(typeof window != 'undefined' && typeof window.Vue != 'undefined')
     window.VueSelect = VueSelect

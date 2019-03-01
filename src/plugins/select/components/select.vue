@@ -48,6 +48,7 @@
  * 
  * - when hold down backspace/delete delete only q & 
  *   wait for another press to clear tags/value
+ * 
  */
 
 import { mid, fetchAdapter, model, isset, debounce, me, error, elMatches } from '../utils'
@@ -55,6 +56,10 @@ import { mid, fetchAdapter, model, isset, debounce, me, error, elMatches } from 
 import vSelectOption from './option';
 import vSelectSelected from './selected'
 import vSelectLoader from './loader'
+
+function filterBy( {label}, q ){
+    return ~(label + '').toLowerCase().indexOf(q.toLowerCase())
+}
 
 export default {
     name: 'Select',
@@ -93,7 +98,7 @@ export default {
          * index: Path to unique property of the option used for comparison.
          *        If ommited falls back to value.
          */
-        as: [String],
+        as: [String, Array],
 
         /**
          * Parses the response from the server.
@@ -117,10 +122,7 @@ export default {
         },
 
         filter: {
-            type: Function,
-            default( {label}, q ){
-                return ~(label + '').toLowerCase().indexOf(q.toLowerCase())
-            },
+            type: [Boolean, Function],
         },
 
         /**
@@ -129,6 +131,8 @@ export default {
         debounce: { type: Number, default: 250 },
 
         tagging: [Boolean, String],
+
+        tags: {}, /* readonly */
 
         tagKeys: {type: Array, default: () => [] },
 
@@ -180,12 +184,12 @@ export default {
          */
         as_(){
 
-            let as = this.as && this.as.split(this.asSpec.rx);
+            let as = Array.isArray(this.as) ? this.as : ( this.as || '' ).split(this.asSpec.rx);
 
             if(!as) return;
             
             as = this.asSpec.order
-                .map( (e, i) => as[i] && model(as[i]) )
+                .map( (e, i) => as[i] ? typeof as[i] == 'function' ? as[i] : model(as[i]) : false )
                 .reduce( (m, e, i) => ({ ...m,  [this.asSpec.order[i]]: e }), {})
 
             as.index = as.index || as.value || error('`index` field is required when working with non primitive options');
@@ -195,12 +199,13 @@ export default {
         
         filtered(){
 
-            let { q } = this;
+            let { q } = this,
+                filter = typeof this.filter == 'function' ? this.filter : filterBy ;
             
-            return this.is_dynamic || !q.length 
+            return (!this.filter) || (this.is_dynamic || !q.length || !this.filter)
                 ? this.options_ 
                 : this.options_.filter( option => {
-                    return this.filter(option, q)
+                    return filter.call(this, option, q)
                 })
         },
 
@@ -259,6 +264,10 @@ export default {
         },
 
         options_: 'syncValue',
+
+        value_(tags){
+            this.$emit('update:tags', tags)
+        },
 
         filtered(){
             
@@ -366,7 +375,7 @@ export default {
             as.value && as.value(raw, q)
             
             as.label && as.label(raw, q)
-
+            
             return this.ofRaw(raw);
         },
 

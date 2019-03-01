@@ -4,10 +4,11 @@
 
       items: {{items}}
       <br>
+      {{item}}
       <br>
       <br>
-      <!-- <v-select v-model="items" as="name:id:id" :tag-keys="[9, 32, 188]" options="/dist/repositories.json?q=" parse="items" /> -->
-      <v-select v-model="items" :tag-keys="[9, 32, 188]" :options="[1,2,3,4]" tagging />
+      <!-- <v-select v-model="items" :as="[label, 'id', 'id']" tagging options="/dist/repositories.json?q=" parse="items" /> -->
+      <v-select v-model="items" :tags.sync="item" :options="[1,2,3,4]" tagging />
       <br>
       <!-- <v-select v-model="item" as="name:id:id" :tag-keys="[9, 32, 188]" options="/dist/repositories.json?q=" parse="items" /> -->
       <br>
@@ -23,20 +24,28 @@
 
 <script>
 
-import { vSelect } from './plugins/select'
+import { vSelect, model } from './plugins/select'
 
 export default {
   name: 'app',
   components: { 
-    vSelect: vSelect || { mixins: [vSelect], components: { vSelectOption: { functional: true, render(h, {slots}){
-      return h('a', slots().default)
-    }}} },
-
+    vSelect: vSelect,
   },
   data(){
     return {
       item: undefined,
       items: [],
+      label: (e, ...args) => {
+        if(!args.length) {
+          return [e.id, e.name].filter(Boolean).join(': ')
+        }
+        let v = (args[0] + '' || '').split(': ');
+        console.log(e, v);
+        
+        if(v[1]) model('id')(e, v[0])
+
+        model('name')(e, v[v.length - 1]);
+      }
     }
   },
 }

@@ -2,55 +2,11 @@
 
 Lightweight and mighty select component like [Chosen](https://harvesthq.github.io/chosen/) and [Select 2](https://select2.org/) done the Vue way.
 
-Main features: 
-
-- **uses** `v-model`
-- **Single/Multiple selection**
-- **Tagging + custom triggering keys**
-- **List Filtering / Searching**
-- **Async options list**
-- **AJAX out of the box using `fetch`**
-- **Debounce AJAX requests**
-- **Transparent access to input attributes**
-- **Highly customizable**
-- **Zero dependencies**
-
-### Usage
-
-```shell
-$ npm i @desislavsd/vue-select
-```
-
-```javascript
-import VueSelect from '@desislavsd/vue-select'
-import { vSelect } from '@desislavsd/vue-select'
-
-Vue.use(VueSelect) // registers <v-select/> globally
-```
-
-```html
-<v-select v-model="user" :options="['John', 'Erik']" />
-
-<!-- select multiple if the model is an array -->
-<v-select v-model="users" as="name.first:id" options="/users" />
-```
-
-#### Props
-
-- `options` - specifies selector's options. Can be:
-  - `Array` - an array of options
-  - `String` - *url* be passed to the `fetch` function
-  - `Object`- options to be passed to the `fetch` function
-  - `Function` - function that returns options array or Promise that resolves to options array
-
-- `as` - List of  `":"` separated paths. Useful when selector options are objects to specify paths to properties for **label**, **value** & **index** of the option. Paths are separated with `":"`.
-  - **label*** - label is used for filtering the options and is also the default display name of the option. This path is required when working with non primitive options.
-  - **value** - path to property to be used as a value. If omitted the whole object is used.
-  - **index** - path to unique property that can be used for comparison and as a key in a `v-for`
-
-#### Events
 
 
+##### Demos & docs 
+
+Soon!
 
 ## License
 
