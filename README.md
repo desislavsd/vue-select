@@ -4,7 +4,7 @@ Lightweight and mighty select component like [Chosen](https://harvesthq.github.i
 
 
 
-##### Demos & docs 
+##### Demos & Docs 
 
 Soon!
 
