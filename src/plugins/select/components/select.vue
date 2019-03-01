@@ -184,9 +184,9 @@ export default {
          */
         as_(){
 
-            let as = Array.isArray(this.as) ? this.as : ( this.as || '' ).split(this.asSpec.rx);
+            if(!this.as || !this.as.length) return;
 
-            if(!as) return;
+            let as = Array.isArray(this.as) ? this.as : ( this.as || '' ).split(this.asSpec.rx);
             
             as = this.asSpec.order
                 .map( (e, i) => as[i] ? typeof as[i] == 'function' ? as[i] : model(as[i]) : false )
@@ -202,7 +202,7 @@ export default {
             let { q } = this,
                 filter = typeof this.filter == 'function' ? this.filter : filterBy;
             
-            return isset(this.filter) ? !!this.filter : (this.is_dynamic || !q.length)
+            return (isset(this.filter) ? !!this.filter : (this.is_dynamic || !q.length))
                 ? this.options_ 
                 : this.options_.filter( option => {
                     return filter.call(this, option, q)
@@ -253,9 +253,9 @@ export default {
         value: {
             immediate: true,
             handler(){
-                this.q = '';
                 this.syncValue();
                 if(!this.is_multiple && isset(this.value)) this.blur();
+                this.q = '';
             }
         },
 
