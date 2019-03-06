@@ -31,7 +31,7 @@
         </div>
 
         <div class="v-select-list" ref="list">
-            <component :is="loaderComponent" v-if="flags.fetching" :phrase="queue.q"><slot name="loader" :phrase="queue.q" /></component>
+            <component :is="loaderComponent" v-if="flags.loading" :phrase="queue.q"><slot name="loader" :phrase="queue.q" /></component>
 
             <component :is="optionComponent" v-for="(option, i) in filtered" :key="option.index" :ref="'option' + i" :option="option" :index="i" :state="state" @mouseup.left.native="select(option)">
                 <slot name="option" :option="option" :index="i" :state="state"/>
@@ -123,6 +123,7 @@ export default {
 
         filter: {
             type: [Boolean, Function],
+            default: undefined
         },
 
         /**
@@ -278,7 +279,12 @@ export default {
 
         queue(promise){
             
-            this.flags.fetching = promise && !!promise.finally( () => this.flags.fetching = promise != this.queue )
+            this.flags.loading = promise && !!promise.finally( () => {
+                if(promise == this.queue){
+                    this.flags.loading = false;
+                    
+                }
+            })
         },
 
         'flags.focused'(focus){
@@ -291,10 +297,15 @@ export default {
 
             let { options, q } = this, queue;
             
-            // do not proceed if the result is cached 
-            if(this.queue && (!this.is_dynamic || ( this.queue.q == q) ) ) return;
+            if( elMatches(this.$refs.inp, ':invalid') ) return Promise.reject('Invalid query');
 
-            queue = this.queue = new Promise( rs => {
+            // do not proceed if the result is cached 
+            if(this.queue && (!this.is_dynamic || ( this.queue.q == q) ) ) return Promise.reject('Result cached');
+
+            this.options_ = [];
+            
+            queue = this.queue = Object.assign(
+                new Promise( rs => {
                 
                     if( Array.isArray(options) ) return rs(options)
 
@@ -304,9 +315,9 @@ export default {
 
                 })
                 .then( res => this.parse_(res) )
-                .then( res => res.map( option => this.ofRaw(option) ) )
+                .then( res => res.map( option => this.ofRaw(option) ) ), 
 
-            queue.q = q; // remeber what `q` was this request associated with
+            {q}) // remeber what `q` was this request associated with
 
             let options_ = await queue;
 
@@ -461,9 +472,10 @@ export default {
             i = this.marked = mid(-1, i, this.filtered.length - 1);
 
             if(~i){
-                let li = this.$refs['option' + i][0].$el;
+                let li = this.$refs['option' + i]; li = li && [0].$el;
 
-                this.$refs.list.scrollTop = Math.round(li.offsetTop + li.offsetHeight - this.$refs.list.offsetHeight/2)
+                if(li)
+                    this.$refs.list.scrollTop = Math.round(li.offsetTop + li.offsetHeight - this.$refs.list.offsetHeight/2)
                 // li.scrollIntoView({behavior: 'smooth'})
             }
             
@@ -558,7 +570,7 @@ export default {
         }
     },
     
-    created(){
+    mounted(){
 
         if( !this.is_async || (this.value_.length && this.value_[0].label == this.value_[0].value ))
             this.search();
