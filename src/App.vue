@@ -5,8 +5,8 @@
       items: {{items}}
       <br>
       <br>
+      <v-select v-model="items" as="name:id:id" pattern=".{3,}" required options="https://api.github.com/search/repositories?q=%s" parse="items" />
       <br>
-      <v-select v-model="items" as="name:id:id" pattern=".{3,}" required tagging options="https://api.github.com/search/repositories?q=%s" parse="items" />
       <!-- <v-select v-model="items" as="name:id:id" tagging options="/dist/repositories.json?q=" parse="items" /> -->
       <!-- <v-select v-model="item" :options="browsers" /> -->
       <br>

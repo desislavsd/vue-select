@@ -275,7 +275,10 @@ export default {
             this.mark(true)
         },
 
-        q: 'debouncedSearch',
+        q(){
+            if(this.is_dynamic) this.options_ = [];
+            this.debouncedSearch();
+        },
 
         queue(promise){
             
@@ -299,13 +302,12 @@ export default {
             
             if( elMatches(this.$refs.inp, ':invalid') ) return Promise.reject('Invalid query');
 
-            // do not proceed if the result is cached 
-            if(this.queue && (!this.is_dynamic || ( this.queue.q == q) ) ) return Promise.reject('Result cached');
 
             this.options_ = [];
             
-            queue = this.queue = Object.assign(
-                new Promise( rs => {
+            queue = this.queue = (this.queue && (!this.is_dynamic || ( this.queue.q == q) ) ) 
+                ? this.queue 
+                : Object.assign( new Promise( rs => {
                 
                     if( Array.isArray(options) ) return rs(options)
 
@@ -321,9 +323,9 @@ export default {
 
             let options_ = await queue;
 
-            if(queue != this.queue) return;
+            if( queue != this.queue || this.q != this.queue.q ) return;
             
-            if(options_ == this.options_) return;
+            if( options_ == this.options_ ) return;
             
             this.options_ = options_;
         },
@@ -466,7 +468,9 @@ export default {
         mark(i){
             // use false/true to mark first/last option
             if(!arguments.length || i === false) i = -1
-            else if ( i === true ) i = this.matched;
+
+            // use `true` to marke matched or first item when no tagging
+            else if ( i === true ) i = ~this.matched ? this.matched : this.is_tagging ? -1 : 0 ;
 
             // assure `i` is a valid index
             i = this.marked = mid(-1, i, this.filtered.length - 1);
