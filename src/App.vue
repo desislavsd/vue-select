@@ -5,16 +5,17 @@
       items: {{items}}
       <br>
       <br>
-      <v-select v-model="items" as="name:id:id" options="https://api.github.com/search/repositories?q=%s" parse="items" pattern=".{3,}" required  />
+      <!-- <v-select v-model="items" as="name:id:id" from="https://api.github.com/search/repositories?q=%s" parse="items" pattern=".{3,}" required /> -->
       <br>
-      <!-- <v-select v-model="items" as="name:id:id" tagging options="/dist/repositories.json?q=" parse="items" /> -->
-      <!-- <v-select v-model="item" :options="browsers" /> -->
+      <!-- <v-select v-model="items" as="name:id:id" tagging from="/dist/repositories.json?q=" parse="items" /> -->
+      <v-select v-model="items" :from="browsers" :tag-keys="[9, 32, 188]" tagging/>
       <br>
-      <!-- <v-select v-model="item" as="name:id:id" :tag-keys="[9, 32, 188]" options="/dist/repositories.json?q=" parse="items" /> -->
+      <!-- <v-select v-model="item" as="name:id:id" :tag-keys="[9, 32, 188]" from="/dist/repositories.json?q=" parse="items" /> -->
       <!-- item {{item}}
       <br>
-      <v-select v-model="items" as="foo.bar::foo.bar" :options="[{foo: {bar: 1}}]" tagging autofocus/> -->
+      <v-select v-model="items" as="foo.bar::foo.bar" :from="[{foo: {bar: 1}}]" tagging autofocus/> -->
 
+      <input type="text">
     </form>
   </div>
 </template>

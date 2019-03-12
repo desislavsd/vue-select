@@ -17,7 +17,7 @@
             
             <!-- SELECTED -->
             <component :is="selectedComponent" v-for="(option,i) in value_" :key="option.index" :option="option" :index="i" @mouseup.left.native="deselect(i)">
-                <slot name="selected" :option="option" :index="i" />
+                <slot name="selected" :option="option" :index="i" :select="this" />
             </component>
 
             <!-- SEARCH INPUT -->
@@ -25,16 +25,16 @@
                 @focus="open().search()" @keydown="onKeyDown" @input="open()" :placeholder="placeholder" />
 
             <!-- ACTION BUTTONS -->
+            <slot name="actions" :select="this"/>
             <button @mousedown="clear()" type="button" class="v-select-btn-close" tabindex="-1"></button>
             <button @click="open()" type="button" class="v-select-btn-dd" tabindex="-1"></button>
-            
         </div>
 
         <div class="v-select-list" ref="list">
             <component :is="loaderComponent" v-if="flags.loading" :phrase="queue.q"><slot name="loader" :phrase="queue.q" /></component>
 
             <component :is="optionComponent" v-for="(option, i) in filtered" :key="option.index" :ref="'option' + i" :option="option" :index="i" :state="state" @mouseup.left.native="select(option)">
-                <slot name="option" :option="option" :index="i" :state="state"/>
+                <slot name="option" :option="option" :index="i" :state="state" :select="this"/>
             </component>
         </div>
 
@@ -73,7 +73,7 @@ export default {
          * String:    Url that will be passed to the fetch function
          * Object:    Config object to be passed to the fetch function.
          */
-        options: {
+        from: {
             type: [ Array, Function, String, Object ], 
             default(){ return [] } 
         },
@@ -103,9 +103,9 @@ export default {
 
         fetch: {
             type: Function,
-            default: async function(options, q){
+            default: async function(q, cfg){
 
-                let url = options.url || options;
+                let url = cfg.url || cfg;
                 
                 return await fetchAdapter(url.replace('%s', q))
             },
@@ -146,7 +146,7 @@ export default {
                 opened: false,
             },
             value_: [],
-            options_: [],
+            options: [],
             asSpec: { rx: /\s*[,:]\s*/, order: 'label:value:index'.split(':') },
             checkFocus_: debounce(10, this.checkFocus)
         }
@@ -157,15 +157,15 @@ export default {
             return 'multiple' in this.$attrs ? this.multiple : Array.isArray(this.value)
         },
         isDynamic(){ 
-            let { options } = this;
+            let { from } = this;
 
-            return Boolean(!Array.isArray(options) && (typeof this.options != 'string' || ~this.options.indexOf('%s')))
+            return Boolean(!Array.isArray(from) && (typeof from != 'string' || ~from.indexOf('%s')))
         },
         isPrimitive(){ 
             return !this.as_ || !Object.values(this.as_).some(Boolean)
         },
         isAsync(){ 
-            return !Array.isArray(this.options) 
+            return !Array.isArray(this.from) 
         },
         
         /**
@@ -192,8 +192,8 @@ export default {
                 filter = typeof this.filter == 'function' ? this.filter : filterBy;
             
             return (isset(this.filter) ? !!this.filter : (this.isDynamic || !q.length))
-                ? this.options_ 
-                : this.options_.filter( option => {
+                ? this.options 
+                : this.options.filter( option => {
                     return filter.call(this, option, q)
                 })
         },
@@ -244,15 +244,16 @@ export default {
             handler(){
                 this.syncValue();
                 this.q = '';
-                if(!this.isMultiple && isset(this.value)) this.close().blur();
+                if(!this.isMultiple && isset(this.value)) this.close();//.blur();
+                if( this.isDynamic ) this.close();
             }
         },
 
-        options(){
+        from(){
             this.queue = null;
         },
 
-        options_: 'syncValue',
+        options: 'syncValue',
 
         value_(tags){
             this.$emit('update:tags', tags)
@@ -264,7 +265,7 @@ export default {
         },
 
         q(){
-            if(this.isDynamic) this.options_ = [];
+            if(this.isDynamic) this.options = [];
             this.debouncedSearch();
         },
 
@@ -286,41 +287,39 @@ export default {
     methods: {
         async search(){
 
-            let { options, q } = this, queue;
+            let { q } = this, queue;
             
-            if( elMatches(this.$refs.inp, ':invalid') ) return Promise.reject('Invalid query');
+            // proceed only if query is valid
+            if( elMatches(this.$refs.inp, ':invalid') ) return;
 
-
-            this.options_ = [];
+            queue = this.queue = this.queue && (!this.isDynamic || ( this.queue.q == q) )
+                ? this.queue // request is cached
+                : this.from_(q)
+                    .then( res => this.parse_(res) )
+                    .then( res => res.map( option => this.ofRaw(option) ) )
             
-            queue = this.queue = (this.queue && (!this.isDynamic || ( this.queue.q == q) ) ) 
-                ? this.queue 
-                : Object.assign( new Promise( rs => {
-                
-                    if( Array.isArray(options) ) return rs(options)
+            queue.q = q; // remeber what `q` was this request associated with
 
-                    if( typeof options == 'function' ) return rs(options(q))
-                    
-                    rs(this.fetch(options, q))
+            let options = await queue;
 
-                })
-                .then( res => this.parse_(res) )
-                .then( res => res.map( option => this.ofRaw(option) ) ), 
-
-            {q}) // remeber what `q` was this request associated with
-
-            let options_ = await queue;
-
+            // disregard the request if it is no longer relevant
             if( queue != this.queue || this.q != this.queue.q ) return;
             
-            if( options_ == this.options_ ) return;
+            // avoid unnecessary update if the results is the same as the previous ( this would happen if `from` is an array )
+            if( options == this.options ) return;
             
-            this.options_ = options_;
+            this.options = options;
         },
+        
+        async from_(q){
+            let { from, fetch } = this;
 
-        async refresh(){
-            this.queue = null;
-            return this.search();
+            if( Array.isArray(from) ) return from;
+            // this.options = [];
+            
+            if(typeof from == 'function') return await from(q)
+            
+            return await fetch(q, from)
         },
 
         /**
@@ -386,7 +385,7 @@ export default {
 
             // selecting already selected options will deselect them in multiple mode
             if( ~index ) 
-                return this.isMultiple ? this.deselect(index) : this.blur()
+                return this.isMultiple ? this.deselect(index) : this//this.blur()
 
             option = option.value
             
@@ -401,7 +400,7 @@ export default {
             
             this.$emit('input',  option )
 
-            this.isMultiple || this.blur()
+            // this.isMultiple || this.blur()
         },
 
         /**
@@ -443,7 +442,7 @@ export default {
             
             if(!isset(this.value)) return this.value_ = [];
 
-            let options = this.options_.concat(this.value_);
+            let options = this.options.concat(this.value_);
             
             return this.value_ = [].concat(this.value).map( val => this.ofValue(val) )
                 .map( val => options.find( option => this.equals(val, option) ) || val );
@@ -464,11 +463,10 @@ export default {
             i = this.marked = mid(-1, i, this.filtered.length - 1);
 
             if(~i){
-                let li = this.$refs['option' + i]; li = li && [0].$el;
+                let li = this.$refs['option' + i]; li = li && li[0] && li[0].$el;
 
-                if(li)
-                    this.$refs.list.scrollTop = Math.round(li.offsetTop + li.offsetHeight - this.$refs.list.offsetHeight/2)
-                // li.scrollIntoView({behavior: 'smooth'})
+                // scroll to marked element
+                if(li) this.scrollTo(li)
             }
             
             return this;
@@ -515,6 +513,11 @@ export default {
             let el = elMatches(this.$el, ':focus') ? this.$el : this.$el.querySelector(':focus');
 
             return el && el.blur(), this;
+        },
+
+        scrollTo(el){
+            this.$refs.list.scrollTop = Math.round(el.offsetTop + el.offsetHeight - this.$refs.list.offsetHeight/2)
+            // li.scrollIntoView({behavior: 'smooth', block: 'nearest', inline: 'nearest'})
         },
 
         checkFocus(){
