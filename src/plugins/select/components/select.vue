@@ -1,7 +1,7 @@
 <template>
     <div class="v-select" :class="classes" tabindex="-1" 
         @focus="$refs.inp.focus()"
-        @mouseup.left="is_multiple && $refs.inp.focus()"
+        @mouseup.left="isMultiple && $refs.inp.focus()"
         @focusin="checkFocus_()" 
         @focusout="checkFocus_()"
         @keydown.down.prevent="next()"
@@ -42,14 +42,6 @@
 </template>
 
 <script>
-/**
- * TODO:
- * - pagination
- * 
- * - when hold down backspace/delete delete only q & 
- *   wait for another press to clear tags/value
- * 
- */
 
 import { mid, fetchAdapter, model, isset, debounce, me, error, elMatches } from '../utils'
 
@@ -57,7 +49,7 @@ import vSelectOption from './option';
 import vSelectSelected from './selected'
 import vSelectLoader from './loader'
 
-function filterBy( {label}, q ){
+function filterBy( { label }, q ){
     return ~(label + '').toLowerCase().indexOf(q.toLowerCase())
 }
 
@@ -77,13 +69,13 @@ export default {
          * Options for the dropdown. Sould be one of:
          * 
          * Array:     Array of select options
-         * Funcgtion: Function that returns an array of options or promise that resolves to an array of options
+         * Function:  Function that returns an array of options or promise that resolves to an array of options
          * String:    Url that will be passed to the fetch function
          * Object:    Config object to be passed to the fetch function.
          */
         options: {
             type: [ Array, Function, String, Object ], 
-            default(){ return []} 
+            default(){ return [] } 
         },
 
         /**
@@ -114,8 +106,6 @@ export default {
             default: async function(options, q){
 
                 let url = options.url || options;
-
-                // await new Promise( rs => setTimeout(rs, 3000) ) // fake slow network
                 
                 return await fetchAdapter(url.replace('%s', q))
             },
@@ -131,7 +121,8 @@ export default {
          */
         debounce: { type: Number, default: 250 },
 
-        tagging: [Boolean, String],
+        tagging: [Boolean],
+        multiple: { type: Boolean, default: undefined },
 
         tags: {}, /* readonly */
 
@@ -162,21 +153,18 @@ export default {
     },
 
     computed: {
-        is_multiple(){ 
-            return typeof this.multiple == 'undefined' ? Array.isArray(this.value) : !!this.multiple
+        isMultiple(){ 
+            return 'multiple' in this.$attrs ? this.multiple : Array.isArray(this.value)
         },
-        is_dynamic(){ 
+        isDynamic(){ 
             let { options } = this;
 
-            return !Array.isArray(options) && (typeof this.options != 'string' || ~this.options.indexOf('%s'))
+            return Boolean(!Array.isArray(options) && (typeof this.options != 'string' || ~this.options.indexOf('%s')))
         },
-        is_primitive(){ 
+        isPrimitive(){ 
             return !this.as_ || !Object.values(this.as_).some(Boolean)
         },
-        is_tagging(){ 
-            return isset(this.tagging) ? this.tagging : 'tagging' in this.$attrs
-        },
-        is_async(){ 
+        isAsync(){ 
             return !Array.isArray(this.options) 
         },
         
@@ -203,7 +191,7 @@ export default {
             let { q } = this,
                 filter = typeof this.filter == 'function' ? this.filter : filterBy;
             
-            return (isset(this.filter) ? !!this.filter : (this.is_dynamic || !q.length))
+            return (isset(this.filter) ? !!this.filter : (this.isDynamic || !q.length))
                 ? this.options_ 
                 : this.options_.filter( option => {
                     return filter.call(this, option, q)
@@ -213,7 +201,7 @@ export default {
         state(){
             return {
                 ...this.flags,
-                multiple: this.is_multiple,
+                multiple: this.isMultiple,
                 searching: !!this.q,
                 empty: !this.value_.length,
                 marked: this.filtered[this.marked],
@@ -240,7 +228,7 @@ export default {
             return typeof this.parse == 'string' ? model(this.parse) : this.parse
         },
         placeholder(){
-            return this.value_.length && !this.is_multiple ? '' : this.$attrs.placeholder || 'Search..'
+            return this.value_.length && !this.isMultiple ? '' : this.$attrs.placeholder || 'Search..'
         },
         matched(){
 
@@ -256,7 +244,7 @@ export default {
             handler(){
                 this.syncValue();
                 this.q = '';
-                if(!this.is_multiple && isset(this.value)) this.close().blur();
+                if(!this.isMultiple && isset(this.value)) this.close().blur();
             }
         },
 
@@ -276,7 +264,7 @@ export default {
         },
 
         q(){
-            if(this.is_dynamic) this.options_ = [];
+            if(this.isDynamic) this.options_ = [];
             this.debouncedSearch();
         },
 
@@ -305,7 +293,7 @@ export default {
 
             this.options_ = [];
             
-            queue = this.queue = (this.queue && (!this.is_dynamic || ( this.queue.q == q) ) ) 
+            queue = this.queue = (this.queue && (!this.isDynamic || ( this.queue.q == q) ) ) 
                 ? this.queue 
                 : Object.assign( new Promise( rs => {
                 
@@ -365,7 +353,7 @@ export default {
          */
         ofValue(value){
 
-            if(this.is_primitive) return this.ofRaw(value);
+            if(this.isPrimitive) return this.ofRaw(value);
 
             let raw = value, as = this.as_;
 
@@ -381,7 +369,7 @@ export default {
          */
         ofPhrase(q){
 
-            if(this.is_primitive) return this.ofRaw(q);
+            if(this.isPrimitive) return this.ofRaw(q);
 
             let raw = {}, as = this.as_;
 
@@ -398,22 +386,22 @@ export default {
 
             // selecting already selected options will deselect them in multiple mode
             if( ~index ) 
-                return this.is_multiple ? this.deselect(index) : this.blur()
+                return this.isMultiple ? this.deselect(index) : this.blur()
 
             option = option.value
             
             if( fresh ){
                 this.$emit('create', option)
 
-                if( !this.is_tagging ) return;
+                if( !this.tagging ) return;
             }
 
-            if(this.is_multiple) 
+            if(this.isMultiple) 
                 option = this.value.concat(option)
             
             this.$emit('input',  option )
 
-            this.is_multiple || this.blur()
+            this.isMultiple || this.blur()
         },
 
         /**
@@ -422,7 +410,7 @@ export default {
          */
         deselect(index){
 
-            if(!this.is_multiple) return this.clear();
+            if(!this.isMultiple) return this.clear();
 
             let value = [...this.value];
 
@@ -436,7 +424,7 @@ export default {
          */
         clear(){
 
-            this.$emit('input', this.is_multiple ? [] : undefined)
+            this.$emit('input', this.isMultiple ? [] : undefined)
         },
         
         /**
@@ -470,7 +458,7 @@ export default {
             if(!arguments.length || i === false) i = -1
 
             // use `true` to marke matched or first item when no tagging
-            else if ( i === true ) i = ~this.matched ? this.matched : this.is_tagging ? -1 : 0 ;
+            else if ( i === true ) i = ~this.matched ? this.matched : this.tagging ? -1 : 0 ;
 
             // assure `i` is a valid index
             i = this.marked = mid(-1, i, this.filtered.length - 1);
@@ -516,7 +504,7 @@ export default {
 
         close(){
             this.flags.opened = false; 
-            if(!this.is_multiple) this.q = '';
+            if(!this.isMultiple) this.q = '';
             return this; 
         },
 
@@ -546,7 +534,7 @@ export default {
 
             let len = this.value_.length;
 
-            len && this.is_multiple ? this.deselect(len - 1) : this.clear();
+            len && this.isMultiple ? this.deselect(len - 1) : this.clear();
         },
 
         onKeyDownEnter(ev){
@@ -562,7 +550,7 @@ export default {
         
         onKeyDown(ev){
             
-            if( !this.is_tagging 
+            if( !this.tagging 
                 || !this.q 
                 || !this.tagKeys.includes(ev.which || ev.keyCode || 0)
                 || (~this.marked && this.filtered[this.marked].label === this.q)
@@ -576,7 +564,7 @@ export default {
     
     mounted(){
 
-        if( !this.is_async || (this.value_.length && this.value_[0].label == this.value_[0].value ))
+        if( !this.isAsync || (this.value_.length && this.value_[0].label == this.value_[0].value ))
             this.search();
     }
 }

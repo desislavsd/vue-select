@@ -5,15 +5,12 @@
       items: {{items}}
       <br>
       <br>
-      <v-select v-model="items" as="name:id:id" pattern=".{3,}" required options="https://api.github.com/search/repositories?q=%s" parse="items" />
+      <v-select v-model="items" as="name:id:id" options="https://api.github.com/search/repositories?q=%s" parse="items" pattern=".{3,}" required  />
       <br>
       <!-- <v-select v-model="items" as="name:id:id" tagging options="/dist/repositories.json?q=" parse="items" /> -->
       <!-- <v-select v-model="item" :options="browsers" /> -->
       <br>
       <!-- <v-select v-model="item" as="name:id:id" :tag-keys="[9, 32, 188]" options="/dist/repositories.json?q=" parse="items" /> -->
-      <br>
-      <br>
-      <input type="text">
       <!-- item {{item}}
       <br>
       <v-select v-model="items" as="foo.bar::foo.bar" :options="[{foo: {bar: 1}}]" tagging autofocus/> -->
@@ -55,9 +52,10 @@ export default {
     visibility hidden 
 :not(:hover)::-moz-scrollbar, :not(:hover)::-moz-scrollbar-thumb
     visibility hidden
+body
+  background #f0f0f0
 #app
   font-family 'Avenir', Helvetica, Arial, sans-serif
   -webkit-font-smoothing antialiased
   -moz-osx-font-smoothing grayscale
-  color #2c3e50
 </style>

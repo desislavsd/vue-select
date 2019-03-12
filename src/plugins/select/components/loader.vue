@@ -1,5 +1,5 @@
 <template>
-    <div class="v-select-option"><slot>Loading...</slot></div>
+    <div class="v-select-option"><slot>...</slot></div>
 </template>
 <script>
 export default {
