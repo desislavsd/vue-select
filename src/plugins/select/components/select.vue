@@ -49,10 +49,6 @@ import vSelectOption from './option';
 import vSelectSelected from './selected'
 import vSelectLoader from './loader'
 
-function filterBy( { label }, q ){
-    return ~(label + '').toLowerCase().indexOf(q.toLowerCase())
-}
-
 export default {
     name: 'Select',
 
@@ -114,6 +110,13 @@ export default {
         filter: {
             type: [Boolean, Function],
             default: undefined
+        },
+
+        filterBy: {
+            type: Function, 
+            default( { label }, q ){
+                return ~(label + '').toLowerCase().indexOf(q.toLowerCase())
+            }
         },
 
         /**
@@ -189,7 +192,7 @@ export default {
         filtered(){
 
             let { q } = this,
-                filter = typeof this.filter == 'function' ? this.filter : filterBy;
+                filter = typeof this.filter == 'function' ? this.filter : this.filterBy;
             
             return (isset(this.filter) ? !!this.filter : (this.isDynamic || !q.length))
                 ? this.options 
