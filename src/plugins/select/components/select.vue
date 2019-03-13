@@ -125,6 +125,7 @@ export default {
         debounce: { type: Number, default: 250 },
 
         tagging: [Boolean],
+
         multiple: { type: Boolean, default: undefined },
 
         tags: {}, /* readonly */
@@ -132,7 +133,9 @@ export default {
         tagKeys: {type: Array, default: () => [] },
 
         optionComponent: { default: 'vSelectOption' },
+
         selectedComponent: { default: 'vSelectSelected' },
+        
         loaderComponent: { default: 'vSelectLoader' },
     },
 
@@ -162,7 +165,13 @@ export default {
         isDynamic(){ 
             let { from } = this;
 
-            return Boolean(!Array.isArray(from) && (typeof from != 'string' || ~from.indexOf('%s')))
+            return  !!( 1
+                && ( !Array.isArray(from) )
+                && ( typeof from != 'string' || ~from.indexOf('%s') )
+                && ( typeof from != 'function' || from.length )
+            )
+
+            // return Boolean(!Array.isArray(from) && (typeof from != 'string' || ~from.indexOf('%s')))
         },
         isPrimitive(){ 
             return !this.as_ || !Object.values(this.as_).some(Boolean)

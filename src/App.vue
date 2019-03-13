@@ -8,7 +8,7 @@
       <!-- <v-select v-model="items" as="name:id:id" from="https://api.github.com/search/repositories?q=%s" parse="items" pattern=".{3,}" required /> -->
       <br>
       <!-- <v-select v-model="items" as="name:id:id" tagging from="/dist/repositories.json?q=" parse="items" /> -->
-      <v-select v-model="items" :from="browsers" :tag-keys="[9, 32, 188]" autofocus/>
+      <v-select v-model="item" :from="getBrowsers" :tag-keys="[9, 32, 188]" autofocus/>
       <br>
       <!-- <v-select v-model="item" as="name:id:id" :tag-keys="[9, 32, 188]" from="/dist/repositories.json?q=" parse="items" /> -->
       <!-- item {{item}}
@@ -34,7 +34,10 @@ export default {
     return {
       item: undefined,
       items: [],
-      browsers: ['Internet Explorer', 'Firefox', 'Chrome', 'Opera', 'Safari']
+      browsers: ['Internet Explorer', 'Firefox', 'Chrome', 'Opera', 'Safari'],
+      getBrowsers: function(){
+        return this.browsers
+      }.bind(this)
     }
   },
 }
