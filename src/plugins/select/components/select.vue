@@ -31,7 +31,7 @@
         </div>
 
         <div class="v-select-list" ref="list">
-            <component :is="loaderComponent" v-if="flags.loading" :phrase="queue.q"><slot name="loader" :phrase="queue.q" /></component>
+            <component :is="loaderComponent" v-if="flags.loading" :phrase="queue.q"><slot name="loader" :phrase="queue.q" :select="this"/></component>
 
             <component :is="optionComponent" v-for="(option, i) in filtered" :key="option.index" :ref="'option' + i" :option="option" :index="i" :state="state" @mouseup.left.native="select(option)">
                 <slot name="option" :option="option" :index="i" :state="state" :select="this"/>
@@ -48,6 +48,12 @@ import { mid, fetchAdapter, model, isset, debounce, me, error, elMatches } from 
 import vSelectOption from './option';
 import vSelectSelected from './selected'
 import vSelectLoader from './loader'
+
+class VSelectOption {
+    constructor(){
+        Object.assign(this, ...arguments)
+    }
+}
 
 export default {
     name: 'Select',
@@ -135,7 +141,7 @@ export default {
         optionComponent: { default: 'vSelectOption' },
 
         selectedComponent: { default: 'vSelectSelected' },
-        
+
         loaderComponent: { default: 'vSelectLoader' },
     },
 
@@ -356,7 +362,7 @@ export default {
 
             isset( option.index ) || ( option.index = option.label )
 
-            return option;
+            return new VSelectOption(option);
         },
 
         /**
