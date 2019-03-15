@@ -12,7 +12,7 @@
     "*.js",
     "*.md"
   ],
-  "version": "0.1.7",
+  "version": "0.1.8",
   "license": "MIT",
   "private": false,
   "repository": {
@@ -22,7 +22,7 @@
   "bugs": {
     "url": "https://github.com/desislavsd/vue-select/issues"
   },
-  "homepage": "https://github.com/desislavsd/vue-select#readme",
+  "homepage": "https://desislavsd.gitbook.io/vue-select/",
   "scripts": {
     "serve": "vue-cli-service serve",
     "build": "vue-cli-service build",
