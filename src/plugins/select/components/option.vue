@@ -18,13 +18,14 @@ export default {
 </script>
 <style lang="stylus">
     .v-select-option
-        display block
+        display flex
+        align-items center
         padding .3em 0.5em
         cursor pointer
-        &:hover
-            background #fafafa
         &.-marked 
-            background #f0f0f0
+            background rgba(0,0,0,.05)
+        &:hover
+            background rgba(0,0,0,.03)
         &.-selected
             opacity 0.5
 </style>

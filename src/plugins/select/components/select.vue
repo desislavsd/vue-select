@@ -67,6 +67,8 @@ export default {
          */
         value: { },
 
+        query: String,
+
         /**
          * Options for the dropdown. Sould be one of:
          * 
@@ -133,6 +135,8 @@ export default {
         tagging: [Boolean],
 
         multiple: { type: Boolean, default: undefined },
+        
+        dynamic: { type: Boolean, default: undefined },
 
         tags: {}, /* readonly */
 
@@ -149,7 +153,7 @@ export default {
 
     data(){
         return {
-            q: '',
+            q: this.query || '',
             marked: -1,
             queue: null,
             flags: {
@@ -171,11 +175,13 @@ export default {
         isDynamic(){ 
             let { from } = this;
 
-            return  !!( 1
-                && ( !Array.isArray(from) )
-                && ( typeof from != 'string' || ~from.indexOf('%s') )
-                && ( typeof from != 'function' || from.length )
-            )
+            return  'dynamic' in this.$attrs 
+                ? this.dynamic 
+                : !!( 1
+                    && ( !Array.isArray(from) )
+                    && ( typeof from != 'string' || ~from.indexOf('%s') )
+                    && ( typeof from != 'function' || from.length )
+                )
 
             // return Boolean(!Array.isArray(from) && (typeof from != 'string' || ~from.indexOf('%s')))
         },
@@ -261,9 +267,6 @@ export default {
             immediate: true,
             handler(){
                 this.syncValue();
-                this.q = '';
-                if(!this.isMultiple && isset(this.value)) this.close();//.blur();
-                if( this.isDynamic ) this.close();
             }
         },
 
@@ -282,9 +285,14 @@ export default {
             this.mark(true)
         },
 
-        q(){
+        q(query){
             if(this.isDynamic) this.options = [];
             this.debouncedSearch();
+            this.$emit('update:query', query)
+        },
+
+        query(query){
+            this.q = query || ''
         },
 
         queue(promise){
@@ -400,6 +408,8 @@ export default {
         select(option, fresh = false ){
 
             let index = this.value_.findIndex( e => this.equals(e, option) );
+
+            this.$emit('select', option);
 
             // selecting already selected options will deselect them in multiple mode
             if( ~index ) 
@@ -584,6 +594,12 @@ export default {
     },
     
     mounted(){
+
+        this.$on('select', () => {
+            if(!this.isMultiple) this.close();//.blur();
+            if( this.isDynamic ) this.close();
+            this.q = '';
+        })
 
         if( !this.isAsync || (this.value_.length && this.value_[0].label == this.value_[0].value ))
             this.search();

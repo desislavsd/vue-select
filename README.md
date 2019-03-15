@@ -1,12 +1,12 @@
-# vue-select
+# @desislavsd/vue-select
+![Logo](public/vue-select.png)
+
+![npm (scoped)](https://img.shields.io/npm/v/@desislavsd/vue-select.svg) ![NPM](https://img.shields.io/npm/l/@desislavsd/vue-select.svg) ![npm bundle size (scoped)](https://img.shields.io/bundlephobia/minzip/@desislavsd/vue-select.svg) ![npm](https://img.shields.io/npm/dw/@desislavsd/vue-select.svg) ![npm](https://img.shields.io/npm/dt/@desislavsd/vue-select.svg)
 
 Lightweight and mighty select component like [Chosen](https://harvesthq.github.io/chosen/) and [Select 2](https://select2.org/) done the Vue way.
 
+## [Demos](https://jsfiddle.net/desislavsd/es2n6py0/) & [Docs](https://desislavsd.gitbook.io/vue-select/)
 
-
-##### Demos & Docs 
-
-Soon!
 
 ## License
 
