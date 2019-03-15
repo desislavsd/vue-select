@@ -415,13 +415,13 @@ export default {
             if( ~index ) 
                 return this.isMultiple ? this.deselect(index) : this//this.blur()
 
-            option = option.value
             
             if( fresh ){
-                this.$emit('create', option)
-
+                this.$emit('create', option);
                 if( !this.tagging ) return;
             }
+            
+            option = option.value
 
             if(this.isMultiple) 
                 option = this.value.concat(option)
