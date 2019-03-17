@@ -19,7 +19,6 @@
             <component :is="selectedComponent" v-for="(option,i) in value_" :key="option.index" :option="option" :index="i" @mouseup.left.native="deselect(i)">
                 <slot name="selected" :option="option" :index="i" :select="this" />
             </component>
-
             <!-- SEARCH INPUT -->
             <input ref="inp" v-model.trim="q" v-bind="$attrs" class="v-select-inp"
                 @focus="open().search()" @keydown="onKeyDown" @input="open()" :placeholder="placeholder" />
@@ -32,12 +31,16 @@
 
         <div class="v-select-list" ref="list">
             
-            <component :is="loaderComponent" v-if="flags.loading" :query="queue.q">
-                <slot name="loader" :query="queue.q" :select="this"/>
+            <component v-if="beforelistComponent" :is="beforelistComponent">
+                <slot name="beforelist" :select="this"/>
             </component>
 
             <component :is="optionComponent" v-for="(option, i) in filtered" :key="option.index" :ref="'option' + i" :option="option" :index="i" :state="state" @mouseup.left.native="select(option)">
                 <slot name="option" :option="option" :index="i" :state="state" :select="this"/>
+            </component>
+
+            <component v-if="afterlistComponent" :is="afterlistComponent">
+                <slot name="afterlist" :select="this"/>
             </component>
         </div>
 
@@ -50,12 +53,14 @@ import { mid, fetchAdapter, model, isset, debounce, me, error, msg, elMatches } 
 
 import vSelectOption from './option';
 import vSelectSelected from './selected'
-import vSelectLoader from './loader'
+import vSelectBeforelist from './beforelist'
 
 export default {
     name: 'Select',
 
-    components: { vSelectOption, vSelectSelected, vSelectLoader },
+    components: { vSelectOption, vSelectSelected, vSelectBeforelist },
+
+    provide: { select(){ return this } },
 
     props: {
 
@@ -138,12 +143,23 @@ export default {
         tags: {}, /* readonly */
 
         tagKeys: {type: Array, default: () => [] },
+        
+        validate: {
+            type: Function,
+            default(){
+                let { q, $attrs } = this;
+
+                return  ( q || !$attrs.hasOwnProperty('minlength') ) && elMatches(this.$refs.inp, ':valid')
+            }
+        },
 
         optionComponent: { default: 'vSelectOption' },
 
         selectedComponent: { default: 'vSelectSelected' },
 
-        loaderComponent: { default: 'vSelectLoader' },
+        beforelistComponent: { default: 'vSelectBeforelist' },
+
+        afterlistComponent: {} ,
     },
 
     inheritAttrs: false,
@@ -313,7 +329,7 @@ export default {
             let { q } = this, queue;
             
             // proceed only if query is valid
-            if( elMatches(this.$refs.inp, ':invalid') ) return Promise.reject(msg('Invalid query'));
+            if( !this.validate() ) return new Error(msg('Invalid query: ' + q));
 
             queue = this.queue = this.queue && (!this.isDynamic || ( this.queue.q == q) )
                 ? this.queue // request is cached
