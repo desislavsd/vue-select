@@ -31,7 +31,10 @@
         </div>
 
         <div class="v-select-list" ref="list">
-            <component :is="loaderComponent" v-if="flags.loading" :phrase="queue.q"><slot name="loader" :phrase="queue.q" :select="this"/></component>
+            
+            <component :is="loaderComponent" v-if="flags.loading" :query="queue.q">
+                <slot name="loader" :query="queue.q" :select="this"/>
+            </component>
 
             <component :is="optionComponent" v-for="(option, i) in filtered" :key="option.index" :ref="'option' + i" :option="option" :index="i" :state="state" @mouseup.left.native="select(option)">
                 <slot name="option" :option="option" :index="i" :state="state" :select="this"/>
@@ -43,17 +46,11 @@
 
 <script>
 
-import { mid, fetchAdapter, model, isset, debounce, me, error, elMatches } from '../utils'
+import { mid, fetchAdapter, model, isset, debounce, me, error, msg, elMatches } from '../utils'
 
 import vSelectOption from './option';
 import vSelectSelected from './selected'
 import vSelectLoader from './loader'
-
-class VSelectOption {
-    constructor(){
-        Object.assign(this, ...arguments)
-    }
-}
 
 export default {
     name: 'Select',
@@ -316,7 +313,7 @@ export default {
             let { q } = this, queue;
             
             // proceed only if query is valid
-            if( elMatches(this.$refs.inp, ':invalid') ) return;
+            if( elMatches(this.$refs.inp, ':invalid') ) return Promise.reject(msg('Invalid query'));
 
             queue = this.queue = this.queue && (!this.isDynamic || ( this.queue.q == q) )
                 ? this.queue // request is cached
@@ -606,6 +603,9 @@ export default {
     }
 }
 
+function VSelectOption(){
+    Object.assign(this, ...arguments)
+}
 </script>
 <style lang="stylus">
     // TODO: add css variables for theming

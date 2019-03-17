@@ -53,7 +53,12 @@ export function isPrimitive(x) {
 
 export function error() {
     // eslint-disable-next-line
-    console.error('[VueSelect]: ', ...arguments)
+    console.error('[@desislavsd/vue-select]: ', ...arguments)
+}
+
+export function msg(m){
+    
+    return '[@desislavsd/vue-select]: ' + m
 }
 
 export function debounce(t, f, defaults) {
@@ -75,6 +80,7 @@ export function debounce(t, f, defaults) {
 export let me = e => e;
 
 export function elMatches(el, ...args){
+    
     return (Element.prototype.matches || Element.prototype.msMatchesSelector || Element.prototype.webkitMatchesSelector).apply(el, args);
 }
 
