@@ -288,7 +288,7 @@ export default {
 
         filtered(){
             
-            this.mark(true)
+            this.mark( this.isDynamic ? 0 : true )
         },
 
         q(query){
