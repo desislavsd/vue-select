@@ -5,7 +5,7 @@
 
 Lightweight and mighty select component like [Chosen](https://harvesthq.github.io/chosen/) and [Select 2](https://select2.org/) done the Vue way.
 
-## [Demos](https://jsfiddle.net/desislavsd/es2n6py0/) & [Docs](https://desislavsd.gitbook.io/vue-select/)
+### [Demos](https://jsfiddle.net/desislavsd/es2n6py0/) & [Docs](https://desislavsd.gitbook.io/vue-select/)
 
 
 ## License
