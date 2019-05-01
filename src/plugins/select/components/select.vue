@@ -16,31 +16,32 @@
         <div class="v-select-bar">
             
             <!-- SELECTED -->
-            <component :is="selectedComponent" v-for="(option,i) in value_" :key="option.index" :option="option" :index="i" @mouseup.left.native="deselect(i)">
-                <slot name="selected" :option="option" :index="i" :select="this" />
+            <component :is="$options.components.Selected" v-for="(option,i) in value_" :key="option.index" :option="option" :index="i" @mouseup.left.native="deselect(i)">
+                <slot name="selected" :option="option" :index="i" :state="state" :select="this"/>
             </component>
+            
             <!-- SEARCH INPUT -->
             <input ref="inp" v-model.trim="q" v-bind="$attrs" class="v-select-inp"
                 @focus="open().search()" @keydown="onKeyDown" @input="open()" :placeholder="placeholder" />
 
             <!-- ACTION BUTTONS -->
-            <slot name="actions" :select="this"/>
+            <slot name="actions" :state="state" :select="this"/>
             <button @mousedown="clear()" type="button" class="v-select-btn-close" tabindex="-1"></button>
             <button @click="open()" type="button" class="v-select-btn-dd" tabindex="-1"></button>
         </div>
 
         <div class="v-select-list" ref="list">
             
-            <component v-if="beforelistComponent" :is="beforelistComponent">
-                <slot name="beforelist" :select="this"/>
+            <component :is="$options.components.Beforelist">
+                <slot name="beforelist" :state="state" :select="this"/>
             </component>
 
-            <component :is="optionComponent" v-for="(option, i) in filtered" :key="option.index" :ref="'option' + i" :option="option" :index="i" :state="state" @mouseup.left.native="select(option)">
+            <component :is="$options.components.Option" v-for="(option, i) in filtered" :key="option.index" :ref="'option' + i" :option="option" :index="i" :state="state" @mouseup.left.native="select(option)">
                 <slot name="option" :option="option" :index="i" :state="state" :select="this"/>
             </component>
 
-            <component v-if="afterlistComponent" :is="afterlistComponent">
-                <slot name="afterlist" :select="this"/>
+            <component :is="$options.components.Afterlist">
+                <slot name="afterlist" :state="state" :select="this"/>
             </component>
         </div>
 
@@ -51,14 +52,14 @@
 
 import { mid, fetchAdapter, model, isset, debounce, me, error, msg, elMatches } from '../utils'
 
-import vSelectOption from './option';
-import vSelectSelected from './selected'
-import vSelectBeforelist from './beforelist'
+import Option from './option';
+import Selected from './selected'
+import Beforelist from './beforelist'
 
 export default {
     name: 'Select',
 
-    components: { vSelectOption, vSelectSelected, vSelectBeforelist },
+    components: { Option, Selected, Beforelist, Afterlist: null },
 
     provide: { select(){ return this } },
 
@@ -152,14 +153,6 @@ export default {
                 return  ( q || !$attrs.hasOwnProperty('minlength') ) && elMatches(this.$refs.inp, ':valid')
             }
         },
-
-        optionComponent: { default: 'vSelectOption' },
-
-        selectedComponent: { default: 'vSelectSelected' },
-
-        beforelistComponent: { default: 'vSelectBeforelist' },
-
-        afterlistComponent: {} ,
     },
 
     inheritAttrs: false,
