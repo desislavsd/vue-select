@@ -317,14 +317,14 @@ export default {
     },
 
     methods: {
-        async search(){
+        async search( force = false ){
 
             let { q } = this, queue;
             
             // proceed only if query is valid
             if( !this.validate() ) return new Error(msg('Invalid query: ' + q));
 
-            queue = this.queue = this.queue && (!this.isDynamic || ( this.queue.q == q) )
+            queue = this.queue = !force && this.queue && (!this.isDynamic || ( this.queue.q == q) )
                 ? this.queue // request is cached
                 : this.from_(q)
                     .then( res => this.parse_(res) )
