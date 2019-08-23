@@ -1,7 +1,15 @@
 {
   "name": "@desislavsd/vue-select",
   "description": "Vue select component like Select2 done the Vue way.",
-  "keywords": ["vue-select", "select", "v-select", "autocomplete", "combobox", "vue", "vue2"],
+  "keywords": [
+    "vue-select",
+    "select",
+    "v-select",
+    "autocomplete",
+    "combobox",
+    "vue",
+    "vue2"
+  ],
   "author": "desislavsd",
   "main": "./dist/vue-select.common.js",
   "browser": "./dist/vue-select.umd.min.js",
@@ -12,7 +20,7 @@
     "*.js",
     "*.md"
   ],
-  "version": "0.3.0",
+  "version": "0.3.1",
   "license": "MIT",
   "private": false,
   "repository": {
