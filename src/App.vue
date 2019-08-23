@@ -5,7 +5,7 @@
       items: {{items}}
       <br>
       <br>
-      <v-select v-model="items" as="name:id:id" from="https://api.github.com/search/repositories?q=%s" parse="items" pattern=".{3,}" minlength=3 />
+      <v-select v-model="items" as="name:id:id" from="https://api.github.com/search/repositories?q=%s" :tagging="maketag" parse="items" pattern=".{3,}" minlength=3 />
       <br>
       <!-- <v-select v-model="items" as="name:id:id" tagging from="/dist/repositories.json?q=" parse="items" /> -->
       <!-- <v-select v-model="item" :from="getBrowsers" :tag-keys="[9, 32, 188]"/> -->
@@ -42,6 +42,23 @@ export default {
       }.bind(this)
     }
   },
+
+  methods: {
+    async maketag(opt){
+
+      console.log('Yahooo will make tag!!');
+      opt = await new Promise(rs => {
+        setTimeout(() => {
+          rs({
+            name: opt.label,
+            id: 55555
+          })
+        }, 3000);
+      })
+
+      return opt
+    }
+  }
 }
 </script>
 <style lang="stylus">

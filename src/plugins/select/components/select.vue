@@ -114,7 +114,7 @@ export default {
 
                 let url = cfg.url || cfg;
                 
-                return await fetchAdapter(url.replace('%s', q))
+                return await fetchAdapter(url.replace('%s', encodeURIComponent(q)))
             },
         },
 
@@ -135,7 +135,7 @@ export default {
          */
         debounce: { type: Number, default: 250 },
 
-        tagging: [Boolean],
+        tagging: [Boolean, Function],
 
         multiple: { type: Boolean, default: undefined },
         
@@ -411,7 +411,7 @@ export default {
             return this.ofRaw(raw);
         },
 
-        select(option, fresh = false ){
+        async select(option, fresh = false ){
 
             let index = this.value_.findIndex( e => this.equals(e, option) );
 
@@ -424,7 +424,17 @@ export default {
             
             if( fresh ){
                 this.$emit('create', option);
+                
                 if( !this.tagging ) return;
+                
+                if(typeof this.tagging == 'function'){
+                    
+                    let res = await this.tagging.call(this.$parent, option);
+                    
+                    if([false].includes(res)) return;
+
+                    option = res instanceof VSelectOption ? res : this.ofRaw(res);
+                }
             }
             
             option = option.value
