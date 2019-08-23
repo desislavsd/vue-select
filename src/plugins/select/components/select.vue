@@ -429,7 +429,7 @@ export default {
                 
                 if(typeof this.tagging == 'function'){
                     
-                    let res = await this.tagging.call(this.$parent, option);
+                    let res = await this.tagging.call(this.$parent, option, this);
                     
                     if([false].includes(res)) return;
 
