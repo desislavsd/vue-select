@@ -29,7 +29,7 @@ import { vSelect, model } from './plugins/select'
 export default {
   name: 'app',
   components: { 
-    vSelect: vSelect,
+    // vSelect: vSelect,
   },
   data(){
     return {

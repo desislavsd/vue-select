@@ -11,7 +11,7 @@ export default VueSelect = {
     install(Vue, { name = 'vSelect', mixin = {} } = {} ){
 
         Vue.component(name, {
-            mixins: [mixin, vSelect]
+            mixins: [vSelect, mixin]
         })
     },
 
