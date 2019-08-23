@@ -5357,22 +5357,16 @@ if (typeof window !== 'undefined') {
 // EXTERNAL MODULE: ./node_modules/core-js/modules/es6.function.name.js
 var es6_function_name = __webpack_require__("7f7f");
 
-// CONCATENATED MODULE: ./node_modules/cache-loader/dist/cjs.js?{"cacheDirectory":"node_modules/.cache/vue-loader","cacheIdentifier":"66bcdb1a-vue-loader-template"}!./node_modules/vue-loader/lib/loaders/templateLoader.js??vue-loader-options!./node_modules/cache-loader/dist/cjs.js??ref--0-0!./node_modules/vue-loader/lib??vue-loader-options!./src/plugins/select/components/select.vue?vue&type=template&id=6740fc9b&
-var render = function () {var _vm=this;var _h=_vm.$createElement;var _c=_vm._self._c||_h;return _c('div',{staticClass:"v-select",class:_vm.classes,attrs:{"tabindex":"-1"},on:{"focus":function($event){return _vm.$refs.inp.focus()},"mouseup":function($event){if(!$event.type.indexOf('key')&&_vm._k($event.keyCode,"left",37,$event.key,["Left","ArrowLeft"])){ return null; }if('button' in $event && $event.button !== 0){ return null; }_vm.isMultiple && _vm.$refs.inp.focus()},"focusin":function($event){return _vm.checkFocus_()},"focusout":function($event){return _vm.checkFocus_()},"keydown":[function($event){if(!$event.type.indexOf('key')&&_vm._k($event.keyCode,"down",40,$event.key,["Down","ArrowDown"])){ return null; }$event.preventDefault();return _vm.next()},function($event){if(!$event.type.indexOf('key')&&_vm._k($event.keyCode,"up",38,$event.key,["Up","ArrowUp"])){ return null; }$event.preventDefault();return _vm.next(true)},function($event){if(!$event.type.indexOf('key')&&_vm._k($event.keyCode,"home",undefined,$event.key,undefined)){ return null; }$event.preventDefault();return _vm.mark(0)},function($event){if(!$event.type.indexOf('key')&&_vm._k($event.keyCode,"end",undefined,$event.key,undefined)){ return null; }$event.preventDefault();return _vm.mark(Infinity)},function($event){if(!$event.type.indexOf('key')&&_vm._k($event.keyCode,"esc",27,$event.key,["Esc","Escape"])){ return null; }~_vm.marked ? _vm.mark() : _vm.close()},function($event){if(!$event.type.indexOf('key')&&_vm._k($event.keyCode,"delete",[8,46],$event.key,["Backspace","Delete","Del"])){ return null; }return _vm.onDelKey()},function($event){if(!$event.type.indexOf('key')&&_vm._k($event.keyCode,"enter",13,$event.key,"Enter")){ return null; }return _vm.onKeyDownEnter($event)}],"mousedown":function($event){if(!$event.type.indexOf('key')&&_vm._k($event.keyCode,"left",37,$event.key,["Left","ArrowLeft"])){ return null; }if('button' in $event && $event.button !== 0){ return null; }return _vm.open()}}},[_c('div',{staticClass:"v-select-bar"},[_vm._l((_vm.value_),function(option,i){return _c(_vm.selectedComponent,{key:option.index,tag:"component",attrs:{"option":option,"index":i},nativeOn:{"mouseup":function($event){if(!$event.type.indexOf('key')&&_vm._k($event.keyCode,"left",37,$event.key,["Left","ArrowLeft"])){ return null; }if('button' in $event && $event.button !== 0){ return null; }return _vm.deselect(i)}}},[_vm._t("selected",null,{"option":option,"index":i,"select":this})],2)}),_c('input',_vm._b({directives:[{name:"model",rawName:"v-model.trim",value:(_vm.q),expression:"q",modifiers:{"trim":true}}],ref:"inp",staticClass:"v-select-inp",attrs:{"placeholder":_vm.placeholder},domProps:{"value":(_vm.q)},on:{"focus":function($event){_vm.open().search()},"keydown":_vm.onKeyDown,"input":[function($event){if($event.target.composing){ return; }_vm.q=$event.target.value.trim()},function($event){return _vm.open()}],"blur":function($event){return _vm.$forceUpdate()}}},'input',_vm.$attrs,false)),_vm._t("actions",null,{"select":this}),_c('button',{staticClass:"v-select-btn-close",attrs:{"type":"button","tabindex":"-1"},on:{"mousedown":function($event){return _vm.clear()}}}),_c('button',{staticClass:"v-select-btn-dd",attrs:{"type":"button","tabindex":"-1"},on:{"click":function($event){return _vm.open()}}})],2),_c('div',{ref:"list",staticClass:"v-select-list"},[(_vm.beforelistComponent)?_c(_vm.beforelistComponent,{tag:"component"},[_vm._t("beforelist",null,{"select":this})],2):_vm._e(),_vm._l((_vm.filtered),function(option,i){return _c(_vm.optionComponent,{key:option.index,ref:'option' + i,refInFor:true,tag:"component",attrs:{"option":option,"index":i,"state":_vm.state},nativeOn:{"mouseup":function($event){if(!$event.type.indexOf('key')&&_vm._k($event.keyCode,"left",37,$event.key,["Left","ArrowLeft"])){ return null; }if('button' in $event && $event.button !== 0){ return null; }return _vm.select(option)}}},[_vm._t("option",null,{"option":option,"index":i,"state":_vm.state,"select":this})],2)}),(_vm.afterlistComponent)?_c(_vm.afterlistComponent,{tag:"component"},[_vm._t("afterlist",null,{"select":this})],2):_vm._e()],2)])}
+// CONCATENATED MODULE: ./node_modules/cache-loader/dist/cjs.js?{"cacheDirectory":"node_modules/.cache/vue-loader","cacheIdentifier":"66bcdb1a-vue-loader-template"}!./node_modules/vue-loader/lib/loaders/templateLoader.js??vue-loader-options!./node_modules/cache-loader/dist/cjs.js??ref--0-0!./node_modules/vue-loader/lib??vue-loader-options!./src/plugins/select/components/select.vue?vue&type=template&id=69233c9e&
+var render = function () {var _vm=this;var _h=_vm.$createElement;var _c=_vm._self._c||_h;return _c('div',{staticClass:"v-select",class:_vm.classes,attrs:{"tabindex":"-1"},on:{"focus":function($event){return _vm.$refs.inp.focus()},"mouseup":function($event){if(!$event.type.indexOf('key')&&_vm._k($event.keyCode,"left",37,$event.key,["Left","ArrowLeft"])){ return null; }if('button' in $event && $event.button !== 0){ return null; }_vm.isMultiple && _vm.$refs.inp.focus()},"focusin":function($event){return _vm.checkFocus_()},"focusout":function($event){return _vm.checkFocus_()},"keydown":[function($event){if(!$event.type.indexOf('key')&&_vm._k($event.keyCode,"down",40,$event.key,["Down","ArrowDown"])){ return null; }$event.preventDefault();return _vm.next()},function($event){if(!$event.type.indexOf('key')&&_vm._k($event.keyCode,"up",38,$event.key,["Up","ArrowUp"])){ return null; }$event.preventDefault();return _vm.next(true)},function($event){if(!$event.type.indexOf('key')&&_vm._k($event.keyCode,"home",undefined,$event.key,undefined)){ return null; }$event.preventDefault();return _vm.mark(0)},function($event){if(!$event.type.indexOf('key')&&_vm._k($event.keyCode,"end",undefined,$event.key,undefined)){ return null; }$event.preventDefault();return _vm.mark(Infinity)},function($event){if(!$event.type.indexOf('key')&&_vm._k($event.keyCode,"esc",27,$event.key,["Esc","Escape"])){ return null; }~_vm.marked ? _vm.mark() : _vm.close()},function($event){if(!$event.type.indexOf('key')&&_vm._k($event.keyCode,"delete",[8,46],$event.key,["Backspace","Delete","Del"])){ return null; }return _vm.onDelKey()},function($event){if(!$event.type.indexOf('key')&&_vm._k($event.keyCode,"enter",13,$event.key,"Enter")){ return null; }return _vm.onKeyDownEnter($event)}],"mousedown":function($event){if(!$event.type.indexOf('key')&&_vm._k($event.keyCode,"left",37,$event.key,["Left","ArrowLeft"])){ return null; }if('button' in $event && $event.button !== 0){ return null; }return _vm.open()}}},[_c('div',{staticClass:"v-select-bar"},[_vm._l((_vm.value_),function(option,i){return _c(_vm.$options.components.Selected,{key:option.index,tag:"component",attrs:{"option":option,"index":i},nativeOn:{"mouseup":function($event){if(!$event.type.indexOf('key')&&_vm._k($event.keyCode,"left",37,$event.key,["Left","ArrowLeft"])){ return null; }if('button' in $event && $event.button !== 0){ return null; }return _vm.deselect(i)}}},[_vm._t("selected",null,{"option":option,"index":i,"state":_vm.state,"select":this})],2)}),_c('input',_vm._b({directives:[{name:"model",rawName:"v-model.trim",value:(_vm.q),expression:"q",modifiers:{"trim":true}}],ref:"inp",staticClass:"v-select-inp",attrs:{"placeholder":_vm.placeholder},domProps:{"value":(_vm.q)},on:{"focus":function($event){_vm.open().search()},"keydown":_vm.onKeyDown,"input":[function($event){if($event.target.composing){ return; }_vm.q=$event.target.value.trim()},function($event){return _vm.open()}],"blur":function($event){return _vm.$forceUpdate()}}},'input',_vm.$attrs,false)),_vm._t("actions",null,{"state":_vm.state,"select":this}),_c('button',{staticClass:"v-select-btn-close",attrs:{"type":"button","tabindex":"-1"},on:{"mousedown":function($event){return _vm.clear()}}}),_c('button',{staticClass:"v-select-btn-dd",attrs:{"type":"button","tabindex":"-1"},on:{"click":function($event){return _vm.open()}}})],2),_c('div',{ref:"list",staticClass:"v-select-list"},[_c(_vm.$options.components.Beforelist,{tag:"component"},[_vm._t("beforelist",null,{"state":_vm.state,"select":this})],2),_vm._l((_vm.filtered),function(option,i){return _c(_vm.$options.components.Option,{key:option.index,ref:'option' + i,refInFor:true,tag:"component",attrs:{"option":option,"index":i,"state":_vm.state},nativeOn:{"mouseup":function($event){if(!$event.type.indexOf('key')&&_vm._k($event.keyCode,"left",37,$event.key,["Left","ArrowLeft"])){ return null; }if('button' in $event && $event.button !== 0){ return null; }return _vm.select(option)}}},[_vm._t("option",null,{"option":option,"index":i,"state":_vm.state,"select":this})],2)}),_c(_vm.$options.components.Afterlist,{tag:"component"},[_vm._t("afterlist",null,{"state":_vm.state,"select":this})],2)],2)])}
 var staticRenderFns = []
 
 
-// CONCATENATED MODULE: ./src/plugins/select/components/select.vue?vue&type=template&id=6740fc9b&
+// CONCATENATED MODULE: ./src/plugins/select/components/select.vue?vue&type=template&id=69233c9e&
 
 // EXTERNAL MODULE: ./node_modules/@babel/runtime-corejs2/core-js/object/assign.js
 var object_assign = __webpack_require__("5176");
 var assign_default = /*#__PURE__*/__webpack_require__.n(object_assign);
-
-// EXTERNAL MODULE: ./node_modules/core-js/modules/es7.array.includes.js
-var es7_array_includes = __webpack_require__("6762");
-
-// EXTERNAL MODULE: ./node_modules/core-js/modules/es6.string.includes.js
-var es6_string_includes = __webpack_require__("2fdb");
 
 // EXTERNAL MODULE: ./node_modules/@babel/runtime-corejs2/core-js/json/stringify.js
 var stringify = __webpack_require__("f499");
@@ -5421,6 +5415,12 @@ function _nonIterableSpread() {
 function _toConsumableArray(arr) {
   return _arrayWithoutHoles(arr) || _iterableToArray(arr) || _nonIterableSpread();
 }
+// EXTERNAL MODULE: ./node_modules/core-js/modules/es7.array.includes.js
+var es7_array_includes = __webpack_require__("6762");
+
+// EXTERNAL MODULE: ./node_modules/core-js/modules/es6.string.includes.js
+var es6_string_includes = __webpack_require__("2fdb");
+
 // EXTERNAL MODULE: ./node_modules/core-js/modules/es7.promise.finally.js
 var es7_promise_finally = __webpack_require__("097d");
 
@@ -5995,6 +5995,7 @@ var beforelist_component = normalizeComponent(
 //
 //
 //
+//
 
 
 
@@ -6002,9 +6003,10 @@ var beforelist_component = normalizeComponent(
 /* harmony default export */ var selectvue_type_script_lang_js_ = ({
   name: 'Select',
   components: {
-    vSelectOption: components_option,
-    vSelectSelected: selected,
-    vSelectBeforelist: beforelist
+    Option: components_option,
+    Selected: selected,
+    Beforelist: beforelist,
+    Afterlist: null
   },
   provide: {
     select: function select() {
@@ -6068,7 +6070,7 @@ var beforelist_component = normalizeComponent(
                 case 0:
                   url = cfg.url || cfg;
                   _context.next = 3;
-                  return fetchAdapter(url.replace('%s', q));
+                  return fetchAdapter(url.replace('%s', encodeURIComponent(q)));
 
                 case 3:
                   return _context.abrupt("return", _context.sent);
@@ -6107,7 +6109,7 @@ var beforelist_component = normalizeComponent(
       type: Number,
       default: 250
     },
-    tagging: [Boolean],
+    tagging: [Boolean, Function],
     multiple: {
       type: Boolean,
       default: undefined
@@ -6132,17 +6134,7 @@ var beforelist_component = normalizeComponent(
             $attrs = this.$attrs;
         return (q || !$attrs.hasOwnProperty('minlength')) && elMatches(this.$refs.inp, ':valid');
       }
-    },
-    optionComponent: {
-      default: 'vSelectOption'
-    },
-    selectedComponent: {
-      default: 'vSelectSelected'
-    },
-    beforelistComponent: {
-      default: 'vSelectBeforelist'
-    },
-    afterlistComponent: {}
+    }
   },
   inheritAttrs: false,
   data: function data() {
@@ -6256,7 +6248,7 @@ var beforelist_component = normalizeComponent(
       this.$emit('update:tags', tags);
     },
     filtered: function filtered() {
-      this.mark(true);
+      this.mark(this.isDynamic ? 0 : true);
     },
     q: function q(query) {
       if (this.isDynamic) this.options = [];
@@ -6286,22 +6278,27 @@ var beforelist_component = normalizeComponent(
       regeneratorRuntime.mark(function _callee2() {
         var _this4 = this;
 
-        var q, queue, options;
+        var force,
+            q,
+            queue,
+            options,
+            _args2 = arguments;
         return regeneratorRuntime.wrap(function _callee2$(_context2) {
           while (1) {
             switch (_context2.prev = _context2.next) {
               case 0:
+                force = _args2.length > 0 && _args2[0] !== undefined ? _args2[0] : false;
                 q = this.q; // proceed only if query is valid
 
                 if (this.validate()) {
-                  _context2.next = 3;
+                  _context2.next = 4;
                   break;
                 }
 
                 return _context2.abrupt("return", new Error(msg('Invalid query: ' + q)));
 
-              case 3:
-                queue = this.queue = this.queue && (!this.isDynamic || this.queue.q == q) ? this.queue // request is cached
+              case 4:
+                queue = this.queue = !force && this.queue && (!this.isDynamic || this.queue.q == q) ? this.queue // request is cached
                 : this.from_(q).then(function (res) {
                   return _this4.parse_(res);
                 }).then(function (res) {
@@ -6311,31 +6308,31 @@ var beforelist_component = normalizeComponent(
                 });
                 queue.q = q; // remeber what `q` was this request associated with
 
-                _context2.next = 7;
+                _context2.next = 8;
                 return queue;
 
-              case 7:
+              case 8:
                 options = _context2.sent;
 
                 if (!(queue != this.queue || this.q != this.queue.q)) {
-                  _context2.next = 10;
+                  _context2.next = 11;
                   break;
                 }
 
                 return _context2.abrupt("return");
 
-              case 10:
+              case 11:
                 if (!(options == this.options)) {
-                  _context2.next = 12;
+                  _context2.next = 13;
                   break;
                 }
 
                 return _context2.abrupt("return");
-
-              case 12:
-                this.options = options;
 
               case 13:
+                this.options = options;
+
+              case 14:
               case "end":
                 return _context2.stop();
             }
@@ -6446,26 +6443,89 @@ var beforelist_component = normalizeComponent(
       as.label && as.label(raw, q);
       return this.ofRaw(raw);
     },
-    select: function select(option) {
-      var _this5 = this;
+    select: function () {
+      var _select = _asyncToGenerator(
+      /*#__PURE__*/
+      regeneratorRuntime.mark(function _callee4(option) {
+        var _this5 = this;
 
-      var fresh = arguments.length > 1 && arguments[1] !== undefined ? arguments[1] : false;
-      var index = this.value_.findIndex(function (e) {
-        return _this5.equals(e, option);
-      });
-      this.$emit('select', option); // selecting already selected options will deselect them in multiple mode
+        var fresh,
+            index,
+            res,
+            _args4 = arguments;
+        return regeneratorRuntime.wrap(function _callee4$(_context4) {
+          while (1) {
+            switch (_context4.prev = _context4.next) {
+              case 0:
+                fresh = _args4.length > 1 && _args4[1] !== undefined ? _args4[1] : false;
+                index = this.value_.findIndex(function (e) {
+                  return _this5.equals(e, option);
+                });
+                this.$emit('select', option); // selecting already selected options will deselect them in multiple mode
 
-      if (~index) return this.isMultiple ? this.deselect(index) : this; //this.blur()
+                if (!~index) {
+                  _context4.next = 5;
+                  break;
+                }
 
-      if (fresh) {
-        this.$emit('create', option);
-        if (!this.tagging) return;
+                return _context4.abrupt("return", this.isMultiple ? this.deselect(index) : this);
+
+              case 5:
+                if (!fresh) {
+                  _context4.next = 16;
+                  break;
+                }
+
+                this.$emit('create', option);
+
+                if (this.tagging) {
+                  _context4.next = 9;
+                  break;
+                }
+
+                return _context4.abrupt("return");
+
+              case 9:
+                if (!(typeof this.tagging == 'function')) {
+                  _context4.next = 16;
+                  break;
+                }
+
+                _context4.next = 12;
+                return this.tagging.call(this.$parent, option);
+
+              case 12:
+                res = _context4.sent;
+
+                if (![false].includes(res)) {
+                  _context4.next = 15;
+                  break;
+                }
+
+                return _context4.abrupt("return");
+
+              case 15:
+                option = res instanceof VSelectOption ? res : this.ofRaw(res);
+
+              case 16:
+                option = option.value;
+                if (this.isMultiple) option = this.value.concat(option);
+                this.$emit('input', option); // this.isMultiple || this.blur()
+
+              case 19:
+              case "end":
+                return _context4.stop();
+            }
+          }
+        }, _callee4, this);
+      }));
+
+      function select(_x4) {
+        return _select.apply(this, arguments);
       }
 
-      option = option.value;
-      if (this.isMultiple) option = this.value.concat(option);
-      this.$emit('input', option); // this.isMultiple || this.blur()
-    },
+      return select;
+    }(),
 
     /**
      * Deselect option by its index
@@ -6659,7 +6719,7 @@ var VueSelect;
         mixin = _ref$mixin === void 0 ? {} : _ref$mixin;
 
     Vue.component(name, {
-      mixins: [mixin, components_select]
+      mixins: [components_select, mixin]
     });
   },
   vSelect: components_select
