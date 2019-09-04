@@ -5,8 +5,25 @@
       items: {{items}}
       <br>
       <br>
-      <v-select v-model="items" as="name:id:id" from="https://api.github.com/search/repositories?q=%s" :tagging="maketag" parse="items" pattern=".{3,}" minlength=3 />
       <br>
+      <br>
+      <br>
+      <br>
+      <br>
+      <br>
+      <br>
+      <br>
+      <br>
+      <br>
+      <v-select v-model="items" as="name::id" v-bind="attrs" from="https://api.github.com/search/repositories?q=%s" tagging parse="items" pattern=".{3,}" minlength=3 />
+
+      <br>
+      <ul>
+        <li v-for="(val, attr) in attrs" :key="attr">{{attr}} 
+
+          <input type="checkbox" v-model="attrs[attr]">
+        </li>
+      </ul>
       <!-- <v-select v-model="items" as="name:id:id" tagging from="/dist/repositories.json?q=" parse="items" /> -->
       <!-- <v-select v-model="item" :from="getBrowsers" :tag-keys="[9, 32, 188]"/> -->
       <br>
@@ -33,6 +50,11 @@ export default {
   },
   data(){
     return {
+      attrs: {
+        required: false,
+        readonly: false,
+        disabled: false,
+      },
       query: 'vue',
       item: undefined,
       items: [],

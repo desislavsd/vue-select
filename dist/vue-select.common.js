@@ -329,6 +329,83 @@ setToStringTag(global.JSON, 'JSON', true);
 
 /***/ }),
 
+/***/ "01f9":
+/***/ (function(module, exports, __webpack_require__) {
+
+"use strict";
+
+var LIBRARY = __webpack_require__("2d00");
+var $export = __webpack_require__("5ca1");
+var redefine = __webpack_require__("2aba");
+var hide = __webpack_require__("32e9");
+var Iterators = __webpack_require__("84f2");
+var $iterCreate = __webpack_require__("41a0");
+var setToStringTag = __webpack_require__("7f20");
+var getPrototypeOf = __webpack_require__("38fd");
+var ITERATOR = __webpack_require__("2b4c")('iterator');
+var BUGGY = !([].keys && 'next' in [].keys()); // Safari has buggy iterators w/o `next`
+var FF_ITERATOR = '@@iterator';
+var KEYS = 'keys';
+var VALUES = 'values';
+
+var returnThis = function () { return this; };
+
+module.exports = function (Base, NAME, Constructor, next, DEFAULT, IS_SET, FORCED) {
+  $iterCreate(Constructor, NAME, next);
+  var getMethod = function (kind) {
+    if (!BUGGY && kind in proto) return proto[kind];
+    switch (kind) {
+      case KEYS: return function keys() { return new Constructor(this, kind); };
+      case VALUES: return function values() { return new Constructor(this, kind); };
+    } return function entries() { return new Constructor(this, kind); };
+  };
+  var TAG = NAME + ' Iterator';
+  var DEF_VALUES = DEFAULT == VALUES;
+  var VALUES_BUG = false;
+  var proto = Base.prototype;
+  var $native = proto[ITERATOR] || proto[FF_ITERATOR] || DEFAULT && proto[DEFAULT];
+  var $default = $native || getMethod(DEFAULT);
+  var $entries = DEFAULT ? !DEF_VALUES ? $default : getMethod('entries') : undefined;
+  var $anyNative = NAME == 'Array' ? proto.entries || $native : $native;
+  var methods, key, IteratorPrototype;
+  // Fix native
+  if ($anyNative) {
+    IteratorPrototype = getPrototypeOf($anyNative.call(new Base()));
+    if (IteratorPrototype !== Object.prototype && IteratorPrototype.next) {
+      // Set @@toStringTag to native iterators
+      setToStringTag(IteratorPrototype, TAG, true);
+      // fix for some old engines
+      if (!LIBRARY && typeof IteratorPrototype[ITERATOR] != 'function') hide(IteratorPrototype, ITERATOR, returnThis);
+    }
+  }
+  // fix Array#{values, @@iterator}.name in V8 / FF
+  if (DEF_VALUES && $native && $native.name !== VALUES) {
+    VALUES_BUG = true;
+    $default = function values() { return $native.call(this); };
+  }
+  // Define iterator
+  if ((!LIBRARY || FORCED) && (BUGGY || VALUES_BUG || !proto[ITERATOR])) {
+    hide(proto, ITERATOR, $default);
+  }
+  // Plug for library
+  Iterators[NAME] = $default;
+  Iterators[TAG] = returnThis;
+  if (DEFAULT) {
+    methods = {
+      values: DEF_VALUES ? $default : getMethod(VALUES),
+      keys: IS_SET ? $default : getMethod(KEYS),
+      entries: $entries
+    };
+    if (FORCED) for (key in methods) {
+      if (!(key in proto)) redefine(proto, key, methods[key]);
+    } else $export($export.P + $export.F * (BUGGY || VALUES_BUG), NAME, methods);
+  }
+  return methods;
+};
+
+
+/***/ }),
+
 /***/ "02f4":
 /***/ (function(module, exports, __webpack_require__) {
 
@@ -1788,6 +1865,26 @@ __webpack_require__("214f")('search', 1, function (defined, SEARCH, $search, may
 
 /***/ }),
 
+/***/ "38fd":
+/***/ (function(module, exports, __webpack_require__) {
+
+// 19.1.2.9 / 15.2.3.2 Object.getPrototypeOf(O)
+var has = __webpack_require__("69a8");
+var toObject = __webpack_require__("4bf8");
+var IE_PROTO = __webpack_require__("613b")('IE_PROTO');
+var ObjectProto = Object.prototype;
+
+module.exports = Object.getPrototypeOf || function (O) {
+  O = toObject(O);
+  if (has(O, IE_PROTO)) return O[IE_PROTO];
+  if (typeof O.constructor == 'function' && O instanceof O.constructor) {
+    return O.constructor.prototype;
+  } return O instanceof Object ? ObjectProto : null;
+};
+
+
+/***/ }),
+
 /***/ "3a38":
 /***/ (function(module, exports) {
 
@@ -1956,6 +2053,27 @@ if (!setTask || !clearTask) {
 module.exports = {
   set: setTask,
   clear: clearTask
+};
+
+
+/***/ }),
+
+/***/ "41a0":
+/***/ (function(module, exports, __webpack_require__) {
+
+"use strict";
+
+var create = __webpack_require__("2aeb");
+var descriptor = __webpack_require__("4630");
+var setToStringTag = __webpack_require__("7f20");
+var IteratorPrototype = {};
+
+// 25.1.2.1.1 %IteratorPrototype%[@@iterator]()
+__webpack_require__("32e9")(IteratorPrototype, __webpack_require__("2b4c")('iterator'), function () { return this; });
+
+module.exports = function (Constructor, NAME, next) {
+  Constructor.prototype = create(IteratorPrototype, { next: descriptor(1, next) });
+  setToStringTag(Constructor, NAME + ' Iterator');
 };
 
 
@@ -3030,6 +3148,20 @@ module.exports = __webpack_require__("8e60") ? Object.defineProperties : functio
 
 /***/ }),
 
+/***/ "7f20":
+/***/ (function(module, exports, __webpack_require__) {
+
+var def = __webpack_require__("86cc").f;
+var has = __webpack_require__("69a8");
+var TAG = __webpack_require__("2b4c")('toStringTag');
+
+module.exports = function (it, tag, stat) {
+  if (it && !has(it = stat ? it : it.prototype, TAG)) def(it, TAG, { configurable: true, value: tag });
+};
+
+
+/***/ }),
+
 /***/ "7f7f":
 /***/ (function(module, exports, __webpack_require__) {
 
@@ -3078,6 +3210,14 @@ module.exports = Object.is || function is(x, y) {
 /***/ (function(module, exports) {
 
 module.exports = function () { /* empty */ };
+
+
+/***/ }),
+
+/***/ "84f2":
+/***/ (function(module, exports) {
+
+module.exports = {};
 
 
 /***/ }),
@@ -4496,6 +4636,71 @@ module.exports = function () {
 
 /***/ }),
 
+/***/ "ac6a":
+/***/ (function(module, exports, __webpack_require__) {
+
+var $iterators = __webpack_require__("cadf");
+var getKeys = __webpack_require__("0d58");
+var redefine = __webpack_require__("2aba");
+var global = __webpack_require__("7726");
+var hide = __webpack_require__("32e9");
+var Iterators = __webpack_require__("84f2");
+var wks = __webpack_require__("2b4c");
+var ITERATOR = wks('iterator');
+var TO_STRING_TAG = wks('toStringTag');
+var ArrayValues = Iterators.Array;
+
+var DOMIterables = {
+  CSSRuleList: true, // TODO: Not spec compliant, should be false.
+  CSSStyleDeclaration: false,
+  CSSValueList: false,
+  ClientRectList: false,
+  DOMRectList: false,
+  DOMStringList: false,
+  DOMTokenList: true,
+  DataTransferItemList: false,
+  FileList: false,
+  HTMLAllCollection: false,
+  HTMLCollection: false,
+  HTMLFormElement: false,
+  HTMLSelectElement: false,
+  MediaList: true, // TODO: Not spec compliant, should be false.
+  MimeTypeArray: false,
+  NamedNodeMap: false,
+  NodeList: true,
+  PaintRequestList: false,
+  Plugin: false,
+  PluginArray: false,
+  SVGLengthList: false,
+  SVGNumberList: false,
+  SVGPathSegList: false,
+  SVGPointList: false,
+  SVGStringList: false,
+  SVGTransformList: false,
+  SourceBufferList: false,
+  StyleSheetList: true, // TODO: Not spec compliant, should be false.
+  TextTrackCueList: false,
+  TextTrackList: false,
+  TouchList: false
+};
+
+for (var collections = getKeys(DOMIterables), i = 0; i < collections.length; i++) {
+  var NAME = collections[i];
+  var explicit = DOMIterables[NAME];
+  var Collection = global[NAME];
+  var proto = Collection && Collection.prototype;
+  var key;
+  if (proto) {
+    if (!proto[ITERATOR]) hide(proto, ITERATOR, ArrayValues);
+    if (!proto[TO_STRING_TAG]) hide(proto, TO_STRING_TAG, NAME);
+    Iterators[NAME] = ArrayValues;
+    if (explicit) for (key in $iterators) if (!proto[key]) redefine(proto, key, $iterators[key], true);
+  }
+}
+
+
+/***/ }),
+
 /***/ "aebd":
 /***/ (function(module, exports) {
 
@@ -4848,6 +5053,48 @@ module.exports = function (key) {
 
 /***/ }),
 
+/***/ "cadf":
+/***/ (function(module, exports, __webpack_require__) {
+
+"use strict";
+
+var addToUnscopables = __webpack_require__("9c6c");
+var step = __webpack_require__("d53b");
+var Iterators = __webpack_require__("84f2");
+var toIObject = __webpack_require__("6821");
+
+// 22.1.3.4 Array.prototype.entries()
+// 22.1.3.13 Array.prototype.keys()
+// 22.1.3.29 Array.prototype.values()
+// 22.1.3.30 Array.prototype[@@iterator]()
+module.exports = __webpack_require__("01f9")(Array, 'Array', function (iterated, kind) {
+  this._t = toIObject(iterated); // target
+  this._i = 0;                   // next index
+  this._k = kind;                // kind
+// 22.1.5.2.1 %ArrayIteratorPrototype%.next()
+}, function () {
+  var O = this._t;
+  var kind = this._k;
+  var index = this._i++;
+  if (!O || index >= O.length) {
+    this._t = undefined;
+    return step(1);
+  }
+  if (kind == 'keys') return step(0, index);
+  if (kind == 'values') return step(0, O[index]);
+  return step(0, [index, O[index]]);
+}, 'values');
+
+// argumentsList[@@iterator] is %ArrayProto_values% (9.4.4.6, 9.4.4.7)
+Iterators.Arguments = Iterators.Array;
+
+addToUnscopables('keys');
+addToUnscopables('values');
+addToUnscopables('entries');
+
+
+/***/ }),
+
 /***/ "cb7c":
 /***/ (function(module, exports, __webpack_require__) {
 
@@ -4971,6 +5218,16 @@ module.exports = __webpack_require__("584a").Array.from;
 
 module.exports = function (it) {
   return typeof it === 'object' ? it !== null : typeof it === 'function';
+};
+
+
+/***/ }),
+
+/***/ "d53b":
+/***/ (function(module, exports) {
+
+module.exports = function (done, value) {
+  return { value: value, done: !!done };
 };
 
 
@@ -5348,16 +5605,19 @@ if (typeof window !== 'undefined') {
 // EXTERNAL MODULE: ./node_modules/core-js/modules/es6.function.name.js
 var es6_function_name = __webpack_require__("7f7f");
 
-// CONCATENATED MODULE: ./node_modules/cache-loader/dist/cjs.js?{"cacheDirectory":"node_modules/.cache/vue-loader","cacheIdentifier":"66bcdb1a-vue-loader-template"}!./node_modules/vue-loader/lib/loaders/templateLoader.js??vue-loader-options!./node_modules/cache-loader/dist/cjs.js??ref--0-0!./node_modules/vue-loader/lib??vue-loader-options!./src/plugins/select/components/select.vue?vue&type=template&id=bf2242fa&
+// CONCATENATED MODULE: ./node_modules/cache-loader/dist/cjs.js?{"cacheDirectory":"node_modules/.cache/vue-loader","cacheIdentifier":"66bcdb1a-vue-loader-template"}!./node_modules/vue-loader/lib/loaders/templateLoader.js??vue-loader-options!./node_modules/cache-loader/dist/cjs.js??ref--0-0!./node_modules/vue-loader/lib??vue-loader-options!./src/plugins/select/components/select.vue?vue&type=template&id=0a040813&
 var render = function () {var _vm=this;var _h=_vm.$createElement;var _c=_vm._self._c||_h;return _c('div',{staticClass:"v-select",class:_vm.classes,attrs:{"tabindex":"-1"},on:{"focus":function($event){return _vm.$refs.inp.focus()},"mouseup":function($event){if(!$event.type.indexOf('key')&&_vm._k($event.keyCode,"left",37,$event.key,["Left","ArrowLeft"])){ return null; }if('button' in $event && $event.button !== 0){ return null; }_vm.isMultiple && _vm.$refs.inp.focus()},"focusin":function($event){return _vm.checkFocus_()},"focusout":function($event){return _vm.checkFocus_()},"keydown":[function($event){if(!$event.type.indexOf('key')&&_vm._k($event.keyCode,"down",40,$event.key,["Down","ArrowDown"])){ return null; }$event.preventDefault();return _vm.next()},function($event){if(!$event.type.indexOf('key')&&_vm._k($event.keyCode,"up",38,$event.key,["Up","ArrowUp"])){ return null; }$event.preventDefault();return _vm.next(true)},function($event){if(!$event.type.indexOf('key')&&_vm._k($event.keyCode,"home",undefined,$event.key,undefined)){ return null; }$event.preventDefault();return _vm.mark(0)},function($event){if(!$event.type.indexOf('key')&&_vm._k($event.keyCode,"end",undefined,$event.key,undefined)){ return null; }$event.preventDefault();return _vm.mark(Infinity)},function($event){if(!$event.type.indexOf('key')&&_vm._k($event.keyCode,"esc",27,$event.key,["Esc","Escape"])){ return null; }~_vm.marked ? _vm.mark() : _vm.close()},function($event){if(!$event.type.indexOf('key')&&_vm._k($event.keyCode,"delete",[8,46],$event.key,["Backspace","Delete","Del"])){ return null; }return _vm.onDelKey()},function($event){if(!$event.type.indexOf('key')&&_vm._k($event.keyCode,"enter",13,$event.key,"Enter")){ return null; }return _vm.onKeyDownEnter($event)}],"mousedown":function($event){if(!$event.type.indexOf('key')&&_vm._k($event.keyCode,"left",37,$event.key,["Left","ArrowLeft"])){ return null; }if('button' in $event && $event.button !== 0){ return null; }return _vm.open()}}},[_c('div',{staticClass:"v-select-bar"},[_vm._l((_vm.value_),function(option,i){return _c(_vm.$options.components.Selected,{key:option.index,tag:"component",attrs:{"option":option,"index":i},nativeOn:{"mouseup":function($event){if(!$event.type.indexOf('key')&&_vm._k($event.keyCode,"left",37,$event.key,["Left","ArrowLeft"])){ return null; }if('button' in $event && $event.button !== 0){ return null; }return _vm.deselect(i)}}},[_vm._t("selected",null,{"option":option,"index":i,"state":_vm.state,"select":this})],2)}),_c('input',_vm._b({directives:[{name:"model",rawName:"v-model.trim",value:(_vm.q),expression:"q",modifiers:{"trim":true}}],ref:"inp",staticClass:"v-select-inp",attrs:{"placeholder":_vm.placeholder},domProps:{"value":(_vm.q)},on:{"focus":function($event){_vm.open().search()},"keydown":_vm.onKeyDown,"input":[function($event){if($event.target.composing){ return; }_vm.q=$event.target.value.trim()},function($event){return _vm.open()}],"blur":function($event){return _vm.$forceUpdate()}}},'input',_vm.$attrs,false)),_vm._t("actions",null,{"state":_vm.state,"select":this}),_c('button',{staticClass:"v-select-btn-close",attrs:{"type":"button","tabindex":"-1"},on:{"mousedown":function($event){return _vm.clear()}}}),_c('button',{staticClass:"v-select-btn-dd",attrs:{"type":"button","tabindex":"-1"},on:{"click":function($event){return _vm.open()}}})],2),_c('div',{ref:"list",staticClass:"v-select-list"},[_c(_vm.$options.components.Beforelist,{tag:"component"},[_vm._t("beforelist",null,{"state":_vm.state,"select":this})],2),_vm._l((_vm.filtered),function(option,i){return _c(_vm.$options.components.Option,{key:option.index,ref:'option' + i,refInFor:true,tag:"component",attrs:{"option":option,"index":i,"state":_vm.state},nativeOn:{"mouseup":function($event){if(!$event.type.indexOf('key')&&_vm._k($event.keyCode,"left",37,$event.key,["Left","ArrowLeft"])){ return null; }if('button' in $event && $event.button !== 0){ return null; }return _vm.select(option)}}},[_vm._t("option",null,{"option":option,"index":i,"state":_vm.state,"select":this})],2)}),_c(_vm.$options.components.Afterlist,{tag:"component"},[_vm._t("afterlist",null,{"state":_vm.state,"select":this})],2)],2)])}
 var staticRenderFns = []
 
 
-// CONCATENATED MODULE: ./src/plugins/select/components/select.vue?vue&type=template&id=bf2242fa&
+// CONCATENATED MODULE: ./src/plugins/select/components/select.vue?vue&type=template&id=0a040813&
 
 // EXTERNAL MODULE: ./node_modules/@babel/runtime-corejs2/core-js/object/assign.js
 var object_assign = __webpack_require__("5176");
 var assign_default = /*#__PURE__*/__webpack_require__.n(object_assign);
+
+// EXTERNAL MODULE: ./node_modules/core-js/modules/web.dom.iterable.js
+var web_dom_iterable = __webpack_require__("ac6a");
 
 // EXTERNAL MODULE: ./node_modules/@babel/runtime-corejs2/core-js/json/stringify.js
 var stringify = __webpack_require__("f499");
@@ -5937,6 +6197,7 @@ var beforelist_component = normalizeComponent(
 
 
 
+
 //
 //
 //
@@ -6125,10 +6386,17 @@ var beforelist_component = normalizeComponent(
             $attrs = this.$attrs;
         return (q || !$attrs.hasOwnProperty('minlength')) && elMatches(this.$refs.inp, ':valid');
       }
+    },
+    watchAttrs: {
+      default: function _default() {
+        return ['required', 'disabled', 'readonly'];
+      }
     }
   },
   inheritAttrs: false,
   data: function data() {
+    var _this = this;
+
     return {
       q: this.query || '',
       marked: -1,
@@ -6144,16 +6412,21 @@ var beforelist_component = normalizeComponent(
         rx: /\s*[,:]\s*/,
         order: 'label:value:index'.split(':')
       },
-      checkFocus_: debounce(10, this.checkFocus)
+      checkFocus_: debounce(10, this.checkFocus),
+      observer: new MutationObserver(function (list, observer) {
+        _this.updateAttrs(list.map(function (e) {
+          return e.attributeName;
+        }).filter(Boolean));
+      })
     };
   },
   computed: {
     isMultiple: function isMultiple() {
-      return 'multiple' in this.$attrs ? this.multiple : is_array_default()(this.value);
+      return this.multiple != undefined ? this.multiple : is_array_default()(this.value);
     },
     isDynamic: function isDynamic() {
       var from = this.from;
-      return 'dynamic' in this.$attrs ? this.dynamic : !!( true && !is_array_default()(from) && (typeof from != 'string' || ~from.indexOf('%s')) && (typeof from != 'function' || from.length)); // return Boolean(!Array.isArray(from) && (typeof from != 'string' || ~from.indexOf('%s')))
+      return this.dynamic != undefined ? this.dynamic : !!( true && !is_array_default()(from) && (typeof from != 'string' || ~from.indexOf('%s')) && (typeof from != 'function' || from.length)); // return Boolean(!Array.isArray(from) && (typeof from != 'string' || ~from.indexOf('%s')))
     },
     isPrimitive: function isPrimitive() {
       return !this.as_ || !values_default()(this.as_).some(Boolean);
@@ -6166,25 +6439,25 @@ var beforelist_component = normalizeComponent(
      * getters & setters for the label, value and index
      */
     as_: function as_() {
-      var _this = this;
+      var _this2 = this;
 
       if (!this.as || !this.as.length) return;
       var as = is_array_default()(this.as) ? this.as : (this.as || '').split(this.asSpec.rx);
       as = this.asSpec.order.map(function (e, i) {
         return as[i] ? typeof as[i] == 'function' ? as[i] : model(as[i]) : false;
       }).reduce(function (m, e, i) {
-        return _objectSpread({}, m, _defineProperty({}, _this.asSpec.order[i], e));
+        return _objectSpread({}, m, _defineProperty({}, _this2.asSpec.order[i], e));
       }, {});
       as.index = as.index || as.value || error('`index` field is required when working with non primitive options');
       return as;
     },
     filtered: function filtered() {
-      var _this2 = this;
+      var _this3 = this;
 
       var q = this.q,
           filter = typeof this.filter == 'function' ? this.filter : this.filterBy;
       return (isset(this.filter) ? !!this.filter : this.isDynamic || !q.length) ? this.options : this.options.filter(function (option) {
-        return filter.call(_this2, option, q);
+        return filter.call(_this3, option, q);
       });
     },
     state: function state() {
@@ -6197,8 +6470,10 @@ var beforelist_component = normalizeComponent(
       });
     },
     classes: function classes() {
+      var _this4 = this;
+
       var state = this.state;
-      return {
+      return _objectSpread({
         '-empty': state.empty,
         '-opened': state.opened,
         '-focused': state.focused,
@@ -6206,7 +6481,9 @@ var beforelist_component = normalizeComponent(
         '-multiple': state.multiple,
         '-selected': state.selected.length,
         '-searching': state.searching
-      };
+      }, this.watchAttrs.reduce(function (m, attr) {
+        return _objectSpread({}, m, _defineProperty({}, "-".concat(attr), _this4.flags[attr]));
+      }, {}));
     },
     debouncedSearch: function debouncedSearch() {
       return debounce(this.debounce, this.search);
@@ -6250,11 +6527,11 @@ var beforelist_component = normalizeComponent(
       this.q = _query || '';
     },
     queue: function queue(promise) {
-      var _this3 = this;
+      var _this5 = this;
 
       this.flags.loading = promise && !!promise.finally(function () {
-        if (promise == _this3.queue) {
-          _this3.flags.loading = false;
+        if (promise == _this5.queue) {
+          _this5.flags.loading = false;
         }
       });
     },
@@ -6267,7 +6544,7 @@ var beforelist_component = normalizeComponent(
       var _search = _asyncToGenerator(
       /*#__PURE__*/
       regeneratorRuntime.mark(function _callee2() {
-        var _this4 = this;
+        var _this6 = this;
 
         var force,
             q,
@@ -6291,10 +6568,10 @@ var beforelist_component = normalizeComponent(
               case 4:
                 queue = this.queue = !force && this.queue && (!this.isDynamic || this.queue.q == q) ? this.queue // request is cached
                 : this.from_(q).then(function (res) {
-                  return _this4.parse_(res);
+                  return _this6.parse_(res);
                 }).then(function (res) {
                   return res.map(function (option) {
-                    return _this4.ofRaw(option);
+                    return _this6.ofRaw(option);
                   });
                 });
                 queue.q = q; // remeber what `q` was this request associated with
@@ -6438,7 +6715,7 @@ var beforelist_component = normalizeComponent(
       var _select = _asyncToGenerator(
       /*#__PURE__*/
       regeneratorRuntime.mark(function _callee4(option) {
-        var _this5 = this;
+        var _this7 = this;
 
         var fresh,
             index,
@@ -6450,7 +6727,7 @@ var beforelist_component = normalizeComponent(
               case 0:
                 fresh = _args4.length > 1 && _args4[1] !== undefined ? _args4[1] : false;
                 index = this.value_.findIndex(function (e) {
-                  return _this5.equals(e, option);
+                  return _this7.equals(e, option);
                 });
                 this.$emit('select', option); // selecting already selected options will deselect them in multiple mode
 
@@ -6543,10 +6820,10 @@ var beforelist_component = normalizeComponent(
      * @param {Object} option option to be checked
      */
     exists: function exists(option) {
-      var _this6 = this;
+      var _this8 = this;
 
       return this.value_.some(function (e) {
-        return _this6.equals(e, option);
+        return _this8.equals(e, option);
       });
     },
 
@@ -6554,15 +6831,15 @@ var beforelist_component = normalizeComponent(
      * Calculates `value_` from model's value
      */
     syncValue: function syncValue() {
-      var _this7 = this;
+      var _this9 = this;
 
       if (!isset(this.value)) return this.value_ = [];
       var options = this.options.concat(this.value_);
       return this.value_ = [].concat(this.value).map(function (val) {
-        return _this7.ofValue(val);
+        return _this9.ofValue(val);
       }).map(function (val) {
         return options.find(function (option) {
-          return _this7.equals(val, option);
+          return _this9.equals(val, option);
         }) || val;
       });
     },
@@ -6651,18 +6928,34 @@ var beforelist_component = normalizeComponent(
       if (!this.tagging || !this.q || !this.tagKeys.includes(ev.which || ev.keyCode || 0) || ~this.marked && this.filtered[this.marked].label === this.q) return;
       ev.preventDefault(), ev.stopPropagation();
       this.select(this.ofPhrase(this.q));
+    },
+    updateAttrs: function updateAttrs(attrs) {
+      var _this10 = this;
+
+      (attrs || this.watchAttrs.concat()).filter(function (attr) {
+        return _this10.watchAttrs.includes(attr);
+      }).forEach(function (attr) {
+        return _this10.$set(_this10.flags, attr, !!_this10.$refs.inp.getAttribute(attr));
+      });
     }
   },
   mounted: function mounted() {
-    var _this8 = this;
+    var _this11 = this;
 
     this.$on('select', function () {
-      if (!_this8.isMultiple) _this8.close(); //.blur();
+      if (!_this11.isMultiple) _this11.close(); //.blur();
 
-      if (_this8.isDynamic) _this8.close();
-      _this8.q = '';
+      if (_this11.isDynamic) _this11.close();
+      _this11.q = '';
     });
     if (!this.isAsync || this.value_.length && this.value_[0].label == this.value_[0].value) this.search();
+    this.observer.observe(this.$refs.inp, {
+      attributes: true
+    });
+    this.updateAttrs();
+  },
+  destroyed: function destroyed() {
+    this.observer.disconnect();
   }
 });
 

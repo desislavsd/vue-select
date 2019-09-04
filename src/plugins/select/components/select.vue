@@ -153,6 +153,8 @@ export default {
                 return  ( q || !$attrs.hasOwnProperty('minlength') ) && elMatches(this.$refs.inp, ':valid')
             }
         },
+
+        watchAttrs: {default(){ return ['required', 'disabled', 'readonly']}}
     },
 
     inheritAttrs: false,
@@ -170,7 +172,11 @@ export default {
             value_: [],
             options: [],
             asSpec: { rx: /\s*[,:]\s*/, order: 'label:value:index'.split(':') },
-            checkFocus_: debounce(10, this.checkFocus)
+            checkFocus_: debounce(10, this.checkFocus),
+            observer: new MutationObserver( (list, observer) => {
+
+                this.updateAttrs(list.map( e => e.attributeName).filter(Boolean))
+            })
         }
     },
 
@@ -248,6 +254,7 @@ export default {
                 '-multiple': state.multiple,
                 '-selected': state.selected.length,
                 '-searching': state.searching,
+                ...this.watchAttrs.reduce( (m, attr) =>({...m, [`-${attr}`]: this.flags[attr]}), {} )
             }
         },
         debouncedSearch(){
@@ -317,6 +324,7 @@ export default {
     },
 
     methods: {
+        
         async search( force = false ){
 
             let { q } = this, queue;
@@ -606,7 +614,16 @@ export default {
             ev.preventDefault(), ev.stopPropagation();
 
             this.select(this.ofPhrase(this.q));
-        }
+        },
+
+        updateAttrs(attrs){
+
+            ( attrs || this.watchAttrs.concat() )
+                .filter( attr => this.watchAttrs.includes(attr) )
+                .forEach( attr =>
+                    this.$set( this.flags, attr, !!this.$refs.inp.getAttribute(attr) )
+                )
+        },
     },
     
     mounted(){
@@ -619,6 +636,14 @@ export default {
 
         if( !this.isAsync || (this.value_.length && this.value_[0].label == this.value_[0].value ))
             this.search();
+
+        this.observer.observe(this.$refs.inp, { attributes: true })
+
+        this.updateAttrs();
+    },
+
+    destroyed(){
+        this.observer.disconnect();
     }
 }
 
@@ -659,9 +684,7 @@ function VSelectOption(){
             display flex
             align-items stretch
             white-space nowrap
-        &.-opened
-            box-shadow 0 3px 6px rgba(0,0,0,0.16)
-            border-radius: var(--radius) var(--radius) 0 0
+        
         &:not(.-opened) .v-select-list
             visibility hidden
         .v-select-inp
@@ -701,27 +724,44 @@ function VSelectOption(){
         &.-empty .v-select-btn-close
             display none
         &.-opened .v-select-btn-dd 
-            display none
+            opacity .6
 
         .v-select-list
             list-style none
             z-index 4
             position absolute
-            top 100%
             left -1px
             right -1px
             padding 0
-            margin-top -1px
             max-height 200px
             overflow hidden
             overflow-y auto
             border inherit
             padding inherit
             background inherit
-            border-top-color transparent
-            padding-top 0
             font-size 12px
             box-shadow inherit
-            border-radius: 0 0 var(--radius) var(--radius)
+
+        &:not(.-top)
+            &.-opened
+                box-shadow 0 3px 6px rgba(0,0,0,0.16)
+                border-radius: var(--radius) var(--radius) 0 0
+            .v-select-list
+                top 100%
+                margin-top -1px
+                border-top-color transparent
+                border-radius: 0 0 var(--radius) var(--radius)
+                padding-top 0
+        &.-top
+            &.-opened
+                box-shadow 0 -3px 6px rgba(0,0,0,0.16)
+                border-radius: 0 0 var(--radius) var(--radius)
+            .v-select-list
+                bottom 100%
+                margin-bottom -1px
+                border-bottom-color transparent
+                border-radius: var(--radius) var(--radius) 0 0
+                padding-bottom 0
+
 </style>
 
