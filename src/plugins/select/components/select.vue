@@ -176,12 +176,12 @@ export default {
 
     computed: {
         isMultiple(){ 
-            return 'multiple' in this.$attrs ? this.multiple : Array.isArray(this.value)
+            return this.multiple != undefined ? this.multiple : Array.isArray(this.value)
         },
         isDynamic(){ 
             let { from } = this;
 
-            return  'dynamic' in this.$attrs 
+            return  this.dynamic != undefined
                 ? this.dynamic 
                 : !!( 1
                     && ( !Array.isArray(from) )
