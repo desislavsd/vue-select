@@ -135,7 +135,7 @@ export default {
          */
         debounce: { type: Number, default: 250 },
 
-        tagging: [Boolean, Function],
+        tagging: { type: [Boolean, Function] },
 
         multiple: { type: Boolean, default: undefined },
         
