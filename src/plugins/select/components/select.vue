@@ -621,7 +621,7 @@ export default {
             ( attrs || this.watchAttrs.concat() )
                 .filter( attr => this.watchAttrs.includes(attr) )
                 .forEach( attr =>
-                    this.$set( this.flags, attr, !!this.$refs.inp.getAttribute(attr) )
+                    this.$set( this.flags, attr, !!this.$refs.inp.hasAttribute(attr) )
                 )
         },
     },
