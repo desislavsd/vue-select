@@ -1,5 +1,5 @@
 <template>
-    <button type="button" class="v-select-btn v-select-selected" tabindex="-1">
+    <button class="v-select-btn v-select-selected" tabindex="-1">
         <slot>{{option.label}}</slot>
     </button>
 </template>

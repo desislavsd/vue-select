@@ -1,5 +1,5 @@
 <template>
-    <div class="v-select" :class="classes" tabindex="-1" 
+    <Layout class="v-select" :class="classes" tabindex="-1" ref="layout"
         @focus="$refs.inp.focus()"
         @mouseup.left="isMultiple && $refs.inp.focus()"
         @focusin="checkFocus_()" 
@@ -13,39 +13,21 @@
         @keydown.enter="onKeyDownEnter"
         @mousedown.left="open()">
 
-        <div class="v-select-bar">
+        <!-- SELECTED -->
+        <Selected slot="selected" v-for="(option,i) in value_" :key="option.index" :option="option" :index="i" @mouseup.left.native="deselect(i)">
+            <slot name="selected" :option="option" :index="i" :state="state" :select="this"/>
+        </Selected>
+        
+        <!-- SEARCH INPUT -->
+        <input ref="inp" v-model.trim="q" v-bind="$attrs" class="v-select-inp"
+            @focus="open().search()" @keydown="onKeyDown" @input="open()" :placeholder="placeholder" />
             
-            <!-- SELECTED -->
-            <component :is="$options.components.Selected" v-for="(option,i) in value_" :key="option.index" :option="option" :index="i" @mouseup.left.native="deselect(i)">
-                <slot name="selected" :option="option" :index="i" :state="state" :select="this"/>
-            </component>
-            
-            <!-- SEARCH INPUT -->
-            <input ref="inp" v-model.trim="q" v-bind="$attrs" class="v-select-inp"
-                @focus="open().search()" @keydown="onKeyDown" @input="open()" :placeholder="placeholder" />
+        <!-- OPTIONS -->
+        <Option slot="options" v-for="(option, i) in filtered" :key="option.index" :ref="'option' + i" :option="option" :index="i" :state="state" @mouseup.left.native="select(option)">
+            <slot name="option" :option="option" :index="i" :state="state" :select="this"/>
+        </Option>
 
-            <!-- ACTION BUTTONS -->
-            <slot name="actions" :state="state" :select="this"/>
-            <button @mousedown="clear()" type="button" class="v-select-btn-close" tabindex="-1"></button>
-            <button @click="open()" type="button" class="v-select-btn-dd" tabindex="-1"></button>
-        </div>
-
-        <div class="v-select-list" ref="list">
-            
-            <component :is="$options.components.Beforelist">
-                <slot name="beforelist" :state="state" :select="this"/>
-            </component>
-
-            <component :is="$options.components.Option" v-for="(option, i) in filtered" :key="option.index" :ref="'option' + i" :option="option" :index="i" :state="state" @mouseup.left.native="select(option)">
-                <slot name="option" :option="option" :index="i" :state="state" :select="this"/>
-            </component>
-
-            <component :is="$options.components.Afterlist">
-                <slot name="afterlist" :state="state" :select="this"/>
-            </component>
-        </div>
-
-    </div>
+    </Layout>
 </template>
 
 <script>
@@ -55,11 +37,12 @@ import { mid, fetchAdapter, model, isset, debounce, me, error, msg, elMatches } 
 import Option from './option';
 import Selected from './selected'
 import Beforelist from './beforelist'
+import Layout from './layout'
 
 export default {
     name: 'Select',
 
-    components: { Option, Selected, Beforelist, Afterlist: null },
+    components: { Option, Selected, Layout },
 
     provide: { select(){ return this } },
 
@@ -154,7 +137,7 @@ export default {
             }
         },
 
-        watchAttrs: {default(){ return ['required', 'disabled', 'readonly']}}
+        watchAttrs: {default(){ return ['required', 'disabled', 'readonly']}},
     },
 
     inheritAttrs: false,
@@ -326,7 +309,7 @@ export default {
     methods: {
         
         async search( force = false ){
-
+            
             let { q } = this, queue;
             
             // proceed only if query is valid
@@ -568,7 +551,9 @@ export default {
         },
 
         scrollTo(el){
-            this.$refs.list.scrollTop = Math.round(el.offsetTop + el.offsetHeight - this.$refs.list.offsetHeight/2)
+            let list = this.$refs.layout.$refs.list;
+
+            list.scrollTop = Math.round(el.offsetTop + el.offsetHeight - list.offsetHeight/2)
             // li.scrollIntoView({behavior: 'smooth', block: 'nearest', inline: 'nearest'})
         },
 
@@ -657,9 +642,9 @@ function VSelectOption(){
         --c-base: #fff
         --c-theme: #f0f0f0
         --c-border: #ccc
-        --radius: 1.5em
         --radius: 0.2em
         --padd: 3px
+        --height: 3em
         font-size 12px
         &, *, :before, :after
             box-sizing border-box
@@ -668,28 +653,33 @@ function VSelectOption(){
     .v-select
         position relative
         outline none
-        height 3em
         padding: var(--padd)
         border 1px solid var(--c-border)
         border-radius: var(--radius)
         background var(--c-base)
+        button, input
+            font inherit
         .v-select-selected
+            margin: 0 var(--padd) var(--padd) 0
             &:first-of-type
                 border-radius: var(--radius) 0 0 var(--radius)
-            &:nth-of-type(n+2)
-                margin-left: var(--padd)
+            // &:nth-of-type(n+2)
         .v-select-bar
             position relative
             height 100%
             display flex
+            flex-wrap wrap
             align-items stretch
             white-space nowrap
-        
+            margin-bottom: calc(0px - var(--padd))
+        .v-select-inp-group
+            min-width 40%
+            display flex
+            flex 1
         &:not(.-opened) .v-select-list
             visibility hidden
         .v-select-inp
             flex 1
-            min-width 40%
             border none
             background none
             padding 0 .5em
@@ -701,7 +691,7 @@ function VSelectOption(){
                 cursor default
         [class*="v-select-btn"]
             padding 0 0.5em
-            height 100%
+            height: calc(var(--height) - var(--padd)*2 - 2px) // substract bar paddings and borders
             background transparent
             border 1px solid transparent
             cursor pointer
@@ -744,7 +734,7 @@ function VSelectOption(){
 
         &:not(.-top)
             &.-opened
-                box-shadow 0 3px 6px rgba(0,0,0,0.16)
+                box-shadow 0 3px 3px -1px rgba(0,0,0,0.16)
                 border-radius: var(--radius) var(--radius) 0 0
             .v-select-list
                 top 100%
@@ -754,7 +744,7 @@ function VSelectOption(){
                 padding-top 0
         &.-top
             &.-opened
-                box-shadow 0 -3px 6px rgba(0,0,0,0.16)
+                box-shadow 0 -3px 3px -1px rgba(0,0,0,0.16)
                 border-radius: 0 0 var(--radius) var(--radius)
             .v-select-list
                 bottom 100%
