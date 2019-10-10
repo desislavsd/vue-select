@@ -19,8 +19,10 @@
         </Selected>
         
         <!-- SEARCH INPUT -->
-        <input ref="inp" v-model.trim="q" v-bind="$attrs" class="v-select-inp"
-            @focus="open().search()" @keydown="onKeyDown" @input="open()" :placeholder="placeholder" />
+        <input ref="inp" v-model.trim="q" v-bind="$attrs" class="v-select-inp" @focus="open().search()" @keydown="onKeyDown" @input="open()" :placeholder="placeholder" />
+        <button v-if="state && state.loading" class="v-select-btn"><slot name="spinner"><span class="v-select-spinner"></span></slot></button>
+        <button @mousedown="clear()" type="button" class="v-select-btn-close" tabindex="-1"></button>
+        <button @click="open()" type="button" class="v-select-btn-dd" tabindex="-1"></button>
             
         <!-- OPTIONS -->
         <Option slot="options" v-for="(option, i) in filtered" :key="option.index" :ref="'option' + i" :option="option" :index="i" :state="state" @mouseup.left.native="select(option)">
@@ -36,7 +38,6 @@ import { mid, fetchAdapter, model, isset, debounce, me, error, msg, elMatches } 
 
 import Option from './option';
 import Selected from './selected'
-import Beforelist from './beforelist'
 import Layout from './layout'
 
 export default {
@@ -156,7 +157,7 @@ export default {
             options: [],
             asSpec: { rx: /\s*[,:]\s*/, order: 'label:value:index'.split(':') },
             checkFocus_: debounce(10, this.checkFocus),
-            observer: new MutationObserver( (list, observer) => {
+            observer: new MutationObserver( (list/* , observer */) => {
 
                 this.updateAttrs(list.map( e => e.attributeName).filter(Boolean))
             })
@@ -663,7 +664,6 @@ function VSelectOption(){
             margin: 0 var(--padd) var(--padd) 0
             &:first-of-type
                 border-radius: var(--radius) 0 0 var(--radius)
-            // &:nth-of-type(n+2)
         .v-select-bar
             position relative
             height 100%
@@ -752,6 +752,22 @@ function VSelectOption(){
                 border-bottom-color transparent
                 border-radius: var(--radius) var(--radius) 0 0
                 padding-bottom 0
+        .v-select-spinner 
+            border 2px solid var(--c-theme)
+            border-left-color var(--c-border)
+            border-radius 100%
+            transform translateZ(0)
+            animation vSelectSpinner .4s linear infinite
+            transition opacity .1s
+            width 1em
+            height 1em
+            display block
+
+    @keyframes vSelectSpinner 
+        0%
+            transform rotate(0deg)
+        to 
+            transform rotate(1turn)
 
 </style>
 

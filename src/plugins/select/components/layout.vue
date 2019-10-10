@@ -6,9 +6,6 @@
 
             <div class="v-select-inp-group">
                 <slot></slot>
-                <span v-if="$parent.state && $parent.state.loading">...</span>
-                <button @mousedown="$parent.clear()" type="button" class="v-select-btn-close" tabindex="-1"></button>
-                <button @click="$parent.open()" type="button" class="v-select-btn-dd" tabindex="-1"></button>
             </div>
 
         </div>
