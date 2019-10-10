@@ -661,7 +661,7 @@ function VSelectOption(){
         button, input
             font inherit
         .v-select-selected
-            margin: 0 var(--padd) var(--padd) 0
+            margin-right: var(--padd)
             &:first-of-type
                 border-radius: var(--radius) 0 0 var(--radius)
         .v-select-bar
@@ -697,6 +697,7 @@ function VSelectOption(){
             cursor pointer
             outline none
             line-height 0
+            margin-bottom: var(--padd)
         
         .v-select-btn-close
             &:before
