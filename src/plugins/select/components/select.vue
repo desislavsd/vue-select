@@ -20,7 +20,7 @@
         
         <!-- SEARCH INPUT -->
         <input ref="inp" v-model.trim="q" v-bind="$attrs" class="v-select-inp" @focus="open().search()" @keydown="onKeyDown" @input="open()" :placeholder="placeholder" />
-        <button v-if="state && state.loading" class="v-select-btn"><slot name="spinner"><span class="v-select-spinner"></span></slot></button>
+        <button v-show="state && state.loading" class="v-select-btn"><slot name="spinner"><span class="v-select-spinner"></span></slot></button>
         <button @mousedown="clear()" type="button" class="v-select-btn-close" tabindex="-1"></button>
         <button @click="open()" type="button" class="v-select-btn-dd" tabindex="-1"></button>
             
@@ -660,8 +660,10 @@ function VSelectOption(){
         background var(--c-base)
         button, input
             font inherit
+            text-align left
         .v-select-selected
             margin-right: var(--padd)
+            margin-bottom: var(--padd)
             &:first-of-type
                 border-radius: var(--radius) 0 0 var(--radius)
         .v-select-bar
@@ -673,8 +675,8 @@ function VSelectOption(){
             white-space nowrap
             margin-bottom: calc(0px - var(--padd))
         .v-select-inp-group
-            min-width 40%
             display flex
+            margin-bottom var(--padd)
             flex 1
         &:not(.-opened) .v-select-list
             visibility hidden
@@ -686,18 +688,17 @@ function VSelectOption(){
             outline none
             position relative
             z-index 1
-            line-height 0
+            min-width 4em
             &[readonly]
                 cursor default
         [class*="v-select-btn"]
-            padding 0 0.5em
-            height: calc(var(--height) - var(--padd)*2 - 2px) // substract bar paddings and borders
+            padding 0.2em 0.5em
+            min-height: calc(var(--height) - var(--padd)*2 - 2px) // substract bar paddings and borders
             background transparent
             border 1px solid transparent
             cursor pointer
             outline none
-            line-height 0
-            margin-bottom: var(--padd)
+            line-height 1em
         
         .v-select-btn-close
             &:before
@@ -730,7 +731,6 @@ function VSelectOption(){
             border inherit
             padding inherit
             background inherit
-            font-size 12px
             box-shadow inherit
 
         &:not(.-top)

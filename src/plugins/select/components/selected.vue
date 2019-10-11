@@ -18,7 +18,6 @@ export default {
             position absolute
             overflow hidden
             text-overflow ellipsis
-            line-height 0
         &.-multiple .v-select-selected
             background var(--c-theme)
             border-color rgba(0,0,0,.1)
