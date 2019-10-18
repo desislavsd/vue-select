@@ -1,5 +1,5 @@
 <template>
-    <div class="v-select" v-bind="$attrs" v-on="$listeners">
+    <div v-bind="$attrs" v-on="$listeners">
         <div class="v-select-bar">
 
             <slot name="selected"></slot>

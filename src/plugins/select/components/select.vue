@@ -20,7 +20,7 @@
         
         <!-- SEARCH INPUT -->
         <input ref="inp" v-model.trim="q" v-bind="$attrs" class="v-select-inp" @focus="open().search()" @keydown="onKeyDown" @input="open()" :placeholder="placeholder" />
-        <button v-show="state && state.loading" class="v-select-btn"><slot name="spinner"><span class="v-select-spinner"></span></slot></button>
+        <button v-show="state && state.loading" class="v-select-btn-spinner"><slot name="spinner"/></button>
         <button @mousedown="clear()" type="button" class="v-select-btn-close" tabindex="-1"></button>
         <button @click="open()" type="button" class="v-select-btn-dd" tabindex="-1"></button>
             
@@ -700,10 +700,24 @@ function VSelectOption(){
             outline none
             line-height 1em
         
+        .v-select-btn-spinner
+            z-index 1
+            margin-left -2em
+            &:before
+                content ''
+                border 2px solid var(--c-theme)
+                border-left-color var(--c-border)
+                border-radius 100%
+                transform translateZ(0)
+                animation vSelectSpinner .4s linear infinite
+                transition opacity .1s
+                width 1em
+                height 1em
+                display block
         .v-select-btn-close
             &:before
-                content '\00D7'
-                font-size 1.2em
+                content '\2716'
+                font-size .8em
             &:not(:hover)
                 opacity 0.6
         .v-select-btn-dd:before
@@ -734,8 +748,8 @@ function VSelectOption(){
             padding-bottom 0
             background inherit
             box-shadow inherit
-            > :first-child
-                margin-top var(--padd)
+            // > :first-child
+            //     margin-top var(--padd)
             > :last-child
                 margin-bottom var(--padd)
 
@@ -759,16 +773,6 @@ function VSelectOption(){
                 border-bottom-color transparent
                 border-radius: var(--radius) var(--radius) 0 0
                 padding-bottom 0
-        .v-select-spinner 
-            border 2px solid var(--c-theme)
-            border-left-color var(--c-border)
-            border-radius 100%
-            transform translateZ(0)
-            animation vSelectSpinner .4s linear infinite
-            transition opacity .1s
-            width 1em
-            height 1em
-            display block
 
     @keyframes vSelectSpinner 
         0%
