@@ -730,8 +730,14 @@ function VSelectOption(){
             overflow-y auto
             border inherit
             padding inherit
+            padding-top 0
+            padding-bottom 0
             background inherit
             box-shadow inherit
+            > :first-child
+                margin-top var(--padd)
+            > :last-child
+                margin-bottom var(--padd)
 
         &:not(.-top)
             &.-opened
