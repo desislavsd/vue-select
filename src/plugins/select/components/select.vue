@@ -1,33 +1,60 @@
+<!--
++ vue -> peerDependency
++ list padding should be items margin
++ clear query on blur to not be mistaken with selection
++ iterate over scopedSlots
++ make spinner appear in place of dd btn
+- add more slots in layout (before list, after list)
+- add no results indicator
+- reject current request when click on spinner
+- consider removing Option & Selected components
+- wrap whole spinner in slot
+- option to disable backspace
+- apply preloading logic on value change
+- simplify caching
+- push tags
+- ? option groups
+- more comments in the code
+-->
 <template>
     <Layout class="v-select" :class="classes" tabindex="-1" ref="layout"
-        @focus="$refs.inp.focus()"
-        @mouseup.left="isMultiple && $refs.inp.focus()"
-        @focusin="checkFocus_()" 
-        @focusout="checkFocus_()"
-        @keydown.down.prevent="next()"
-        @keydown.up.prevent="next(true)"
-        @keydown.home.prevent="mark(0)"
-        @keydown.end.prevent="mark(Infinity)"
-        @keydown.esc="~marked ? mark() : close()"
-        @keydown.delete="onDelKey()"
-        @keydown.enter="onKeyDownEnter"
-        @mousedown.left="open()">
+        @focus.native="$refs.inp.focus()"
+        @mouseup.native.left="isMultiple && $refs.inp.focus()"
+        @focusin.native="checkFocus_()" 
+        @focusout.native="checkFocus_()"
+        @keydown.native.down.prevent="next()"
+        @keydown.native.up.prevent="next(true)"
+        @keydown.native.home.prevent="mark(0)"
+        @keydown.native.end.prevent="mark(Infinity)"
+        @keydown.native.esc="~marked ? mark() : close()"
+        @keydown.native.delete="onDelKey()"
+        @keydown.native.enter="onKeyDownEnter"
+        @mousedown.native.left="open()">
 
         <!-- SELECTED -->
-        <Selected slot="selected" v-for="(option,i) in value_" :key="option.index" :option="option" :index="i" @mouseup.left.native="deselect(i)">
-            <slot name="selected" :option="option" :index="i" :state="state" :select="this"/>
+        <Selected v-slot:selected v-for="(option,i) in value_" :key="option.index" v-bind="{ option, state, index: i, select: this }" @mouseup.left.native="deselect(i)">
+
+            <slot name="selected" v-bind="{ option, state, index: i, select: this }"/>
+
         </Selected>
         
         <!-- SEARCH INPUT -->
-        <input ref="inp" v-model.trim="q" v-bind="$attrs" class="v-select-inp" @focus="open().search()" @keydown="onKeyDown" @input="open()" :placeholder="placeholder" />
-        <button v-show="state && state.loading" class="v-select-btn-spinner"><slot name="spinner"/></button>
-        <button @mousedown="clear()" type="button" class="v-select-btn-close" tabindex="-1"></button>
-        <button @click="open()" type="button" class="v-select-btn-dd" tabindex="-1"></button>
+        <input v-slot:input ref="inp" class="v-select-inp" :placeholder="placeholder" v-model.trim="q" v-bind="$attrs" @focus="open().search()" @keydown="onKeyDown" @input="open()" />
+
+        <template v-slot:actions>
+            <button @mousedown="clear()" type="button" tabindex="-1" class="v-select-btn-clear"></button>
+            <button @click="open()"      type="button" tabindex="-1" class="v-select-btn-dd"></button>
+            <button @click.prevent       type="button" tabindex="-1" class="v-select-btn-spinner"><slot name="spinner"/></button>
+        </template>
             
         <!-- OPTIONS -->
-        <Option slot="options" v-for="(option, i) in filtered" :key="option.index" :ref="'option' + i" :option="option" :index="i" :state="state" @mouseup.left.native="select(option)">
-            <slot name="option" :option="option" :index="i" :state="state" :select="this"/>
+        <Option v-slot:options v-for="(option, i) in filtered" :key="option.index" :ref="'option' + i" v-bind="{ option, state, index: i, select: this }" @mouseup.left.native="select(option)">
+            <slot name="option" v-bind="{ option, state, index: i, select: this }" />
         </Option>
+        
+        <template v-for="name in layoutSlots" v-slot:[name]="data">
+            <slot :name="name" v-bind="{ state, select: this, ...data }"/>
+        </template>
 
     </Layout>
 </template>
@@ -256,6 +283,11 @@ export default {
             let q = this.q.toLowerCase();
             
             return !q ? -1 : this.filtered.findIndex( e => (e.label + '').toLowerCase() == q )
+        },
+        layoutSlots(){
+            let skip = 'option selected spinner actions input'.split(' ');
+
+            return Object.keys(this.$scopedSlots).filter( key => !skip.includes(key) )
         }
     },
 
@@ -303,7 +335,7 @@ export default {
         },
 
         'flags.focused'(focus){
-            return focus ? this.open() : this.close();
+            return focus ? this.open() : this.close(true);
         }
     },
 
@@ -536,9 +568,9 @@ export default {
             return this.mark(true); 
         },
 
-        close(){
+        close(clearQuery){
             this.flags.opened = false; 
-            if(!this.isMultiple) this.q = '';
+            if(clearQuery || !this.isMultiple) this.q = '';
             return this; 
         },
 
@@ -700,9 +732,9 @@ function VSelectOption(){
             outline none
             line-height 1em
         
+        &:not(.-loading) .v-select-btn-spinner
+            display none
         .v-select-btn-spinner
-            z-index 1
-            margin-left -2em
             &:before
                 content ''
                 border 2px solid var(--c-theme)
@@ -714,12 +746,14 @@ function VSelectOption(){
                 width 1em
                 height 1em
                 display block
-        .v-select-btn-close
+        .v-select-btn-clear
             &:before
                 content '\2716'
                 font-size .8em
             &:not(:hover)
                 opacity 0.6
+        &.-loading .v-select-btn-dd
+            display none
         .v-select-btn-dd:before
                 content: ''
                 display: block;
@@ -727,7 +761,8 @@ function VSelectOption(){
                 border-top-color: #000;
                 border-width: 0.5em 0.3em 0;
                 opacity: .8;
-        &.-empty .v-select-btn-close
+                margin 0 .2em
+        &.-empty .v-select-btn-clear
             display none
         &.-opened .v-select-btn-dd 
             opacity .6

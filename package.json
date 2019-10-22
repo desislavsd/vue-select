@@ -39,8 +39,8 @@
     "publish": "npm publish --access public",
     "lint": "vue-cli-service lint"
   },
-  "dependencies": {
-    "vue": "^2.6.6"
+  "peerDependencies": {
+    "vue": "2.x"
   },
   "devDependencies": {
     "@vue/cli-plugin-babel": "^3.4.0",

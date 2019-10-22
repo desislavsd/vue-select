@@ -3,13 +3,17 @@
     <form @submit.prevent="log('submit')">
 
       <v-select v-model="items" as="name::id" from="https://api.github.com/search/repositories?q=%s" 
-        parse="items" minlength=3>
+        autofocus parse="items" minlength=3>
+
         <template v-slot:selected="{option}">
           <div>
             {{option.raw.name}} <!-- <br>
             {{option.raw.id}} -->
           </div>
         </template>
+
+        <template v-slot:beforelist="scope">Yahoo {{scope.foo}}</template>
+        
       </v-select>
 
     </form>

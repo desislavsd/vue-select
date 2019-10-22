@@ -1,18 +1,19 @@
 <template>
-    <div v-bind="$attrs" v-on="$listeners">
+    <div>
         <div class="v-select-bar">
 
-            <slot name="selected"></slot>
+            <slot name="selected" />
 
             <div class="v-select-inp-group">
-                <slot></slot>
+                <slot name="input" />
+                <slot name="actions" />
             </div>
 
         </div>
 
         <div class="v-select-list" ref="list">
 
-            <slot name="options"></slot>
+            <slot name="options" />
             
         </div>
 
@@ -28,6 +29,6 @@ export default {
 <style>
     /** 
      * since this component might be replace
-     * styles should probably stay in the main component
+     * styles should stay in the main component
      */ 
 </style>
