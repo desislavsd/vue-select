@@ -12,9 +12,9 @@
         </div>
 
         <div class="v-select-list" ref="list">
-
+            <slot name="beforelist" />
             <slot name="options" />
-            
+            <slot name="afterlist" />
         </div>
 
     </div>

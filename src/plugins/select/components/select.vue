@@ -4,17 +4,19 @@
 + clear query on blur to not be mistaken with selection
 + iterate over scopedSlots
 + make spinner appear in place of dd btn
-- add more slots in layout (before list, after list)
-- add no results indicator
-- reject current request when click on spinner
-- consider removing Option & Selected components
-- wrap whole spinner in slot
-- option to disable backspace
++ add more slots in layout (before list, after list)
+
+- change the error handler `utils.error`
 - apply preloading logic on value change
+- consider removing Option & Selected components
+- option to disable backspace
 - simplify caching
 - push tags
-- ? option groups
-- more comments in the code
+
+* ? option groups
+* add no results indicator
+* reject current request when click on spinner
+* more comments in the code
 -->
 <template>
     <Layout class="v-select" :class="classes" tabindex="-1" ref="layout"
@@ -32,25 +34,29 @@
         @mousedown.native.left="open()">
 
         <!-- SELECTED -->
-        <Selected v-slot:selected v-for="(option,i) in value_" :key="option.index" v-bind="{ option, state, index: i, select: this }" @mouseup.left.native="deselect(i)">
-
-            <slot name="selected" v-bind="{ option, state, index: i, select: this }"/>
-
-        </Selected>
+        <template v-slot:selected>
+            <Selected v-for="(option,i) in value_" :key="option.index" v-bind="{ option, state, index: i, select: this }" @mouseup.left.native="deselect(i)">
+                <slot name="selected" v-bind="{ option, state, index: i, select: this }"/>
+            </Selected>
+        </template>
         
         <!-- SEARCH INPUT -->
-        <input v-slot:input ref="inp" class="v-select-inp" :placeholder="placeholder" v-model.trim="q" v-bind="$attrs" @focus="open().search()" @keydown="onKeyDown" @input="open()" />
+        <template v-slot:input>
+            <input ref="inp" class="v-select-inp" :placeholder="placeholder" v-model.trim="q" v-bind="$attrs" @focus="open().search()" @keydown="onKeyDown" @input="open()" />
+        </template>
 
         <template v-slot:actions>
-            <button @mousedown="clear()" type="button" tabindex="-1" class="v-select-btn-clear"></button>
-            <button @click="open()"      type="button" tabindex="-1" class="v-select-btn-dd"></button>
-            <button @click.prevent       type="button" tabindex="-1" class="v-select-btn-spinner"><slot name="spinner"/></button>
+            <button @mousedown="clear()" class="v-select-btn-clear"   type="button" tabindex="-1"></button>
+            <button @click="open()"      class="v-select-btn-dd"      type="button" tabindex="-1"></button>
+            <button                      class="v-select-btn-spinner" type="button" tabindex="-1"><slot name="spinner"/></button>
         </template>
             
         <!-- OPTIONS -->
-        <Option v-slot:options v-for="(option, i) in filtered" :key="option.index" :ref="'option' + i" v-bind="{ option, state, index: i, select: this }" @mouseup.left.native="select(option)">
-            <slot name="option" v-bind="{ option, state, index: i, select: this }" />
-        </Option>
+        <template v-slot:options>
+            <Option v-for="(option, i) in filtered" :key="option.index" :ref="'option' + i" v-bind="{ option, state, index: i, select: this }" @mouseup.left.native="select(option)">
+                <slot name="option" v-bind="{ option, state, index: i, select: this }" />
+            </Option>
+        </template>
         
         <template v-for="name in layoutSlots" v-slot:[name]="data">
             <slot :name="name" v-bind="{ state, select: this, ...data }"/>
@@ -72,7 +78,7 @@ export default {
 
     components: { Option, Selected, Layout },
 
-    provide: { select(){ return this } },
+    provide: { select(){ return this }, state(){ return this.state } },
 
     props: {
 
@@ -183,11 +189,7 @@ export default {
             value_: [],
             options: [],
             asSpec: { rx: /\s*[,:]\s*/, order: 'label:value:index'.split(':') },
-            checkFocus_: debounce(10, this.checkFocus),
-            observer: new MutationObserver( (list/* , observer */) => {
-
-                this.updateAttrs(list.map( e => e.attributeName).filter(Boolean))
-            })
+            checkFocus_: debounce(10, this.checkFocus)
         }
     },
 
@@ -195,6 +197,15 @@ export default {
         isMultiple(){ 
             return this.multiple != undefined ? this.multiple : Array.isArray(this.value)
         },
+        /**
+         * whether the options list is received via getter function
+         */
+        isAsync(){ 
+            return !Array.isArray(this.from) 
+        },
+        /**
+         * whether the options list depends on the query
+         */
         isDynamic(){ 
             let { from } = this;
 
@@ -208,11 +219,19 @@ export default {
 
             // return Boolean(!Array.isArray(from) && (typeof from != 'string' || ~from.indexOf('%s')))
         },
+        /**
+         * whether options are primitive
+         */
         isPrimitive(){ 
             return !this.as_ || !Object.values(this.as_).some(Boolean)
         },
-        isAsync(){ 
-            return !Array.isArray(this.from) 
+        /**
+         * whether values are insufficient to recreate an option object;
+         * this is the case when label and value point to different 
+         * properties of the option object
+         */
+        isInsufficient(){
+            return this.as_ && this.as_[1]
         },
         
         /**
@@ -256,7 +275,8 @@ export default {
             }
         },
         classes(){
-            let { state } = this;
+            let { state, $attrs } = this;
+
             return {
                 '-empty': state.empty, 
                 '-opened': state.opened, 
@@ -265,7 +285,7 @@ export default {
                 '-multiple': state.multiple,
                 '-selected': state.selected.length,
                 '-searching': state.searching,
-                ...this.watchAttrs.reduce( (m, attr) =>({...m, [`-${attr}`]: this.flags[attr]}), {} )
+                ...this.watchAttrs.reduce( (m, attr) => ({...m, [`-${attr}`]: $attrs[attr]}), {} )
             }
         },
         debouncedSearch(){
@@ -285,7 +305,7 @@ export default {
             return !q ? -1 : this.filtered.findIndex( e => (e.label + '').toLowerCase() == q )
         },
         layoutSlots(){
-            let skip = 'option selected spinner actions input'.split(' ');
+            let skip = 'selected input actions options spinner'.split(' ');
 
             return Object.keys(this.$scopedSlots).filter( key => !skip.includes(key) )
         }
@@ -335,6 +355,7 @@ export default {
         },
 
         'flags.focused'(focus){
+            this.$emit(focus ? 'focus' : 'blur');
             return focus ? this.open() : this.close(true);
         }
     },
@@ -634,14 +655,7 @@ export default {
             this.select(this.ofPhrase(this.q));
         },
 
-        updateAttrs(attrs){
 
-            ( attrs || this.watchAttrs.concat() )
-                .filter( attr => this.watchAttrs.includes(attr) )
-                .forEach( attr =>
-                    this.$set( this.flags, attr, !!this.$refs.inp.hasAttribute(attr) )
-                )
-        },
     },
     
     mounted(){
@@ -652,16 +666,8 @@ export default {
             this.q = '';
         })
 
-        if( !this.isAsync || (this.value_.length && this.value_[0].label == this.value_[0].value ))
+        if( !this.isAsync || (this.value_.length && this.isInsufficient ))
             this.search();
-
-        this.observer.observe(this.$refs.inp, { attributes: true })
-
-        this.updateAttrs();
-    },
-
-    destroyed(){
-        this.observer.disconnect();
     }
 }
 
@@ -710,6 +716,7 @@ function VSelectOption(){
             display flex
             margin-bottom var(--padd)
             flex 1
+            min-width 10em
         &:not(.-opened) .v-select-list
             visibility hidden
         .v-select-inp
@@ -720,7 +727,7 @@ function VSelectOption(){
             outline none
             position relative
             z-index 1
-            min-width 4em
+            min-width 0
             &[readonly]
                 cursor default
         [class*="v-select-btn"]

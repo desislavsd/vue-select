@@ -2,20 +2,15 @@
   <div id="app">
     <form @submit.prevent="log('submit')">
 
-      <v-select v-model="items" as="name::id" from="https://api.github.com/search/repositories?q=%s" 
-        autofocus parse="items" minlength=3>
+      <v-select v-model="items" as="name:id:id" from="https://api.github.com/search/repositories?q=%s" 
+        parse="items" minlength=3 v-bind="attrs">
 
-        <template v-slot:selected="{option}">
-          <div>
-            {{option.raw.name}} <!-- <br>
-            {{option.raw.id}} -->
-          </div>
-        </template>
-
-        <template v-slot:beforelist="scope">Yahoo {{scope.foo}}</template>
-        
       </v-select>
 
+      <div v-for="(val, attr) in attrs">
+        <input type="checkbox" v-model="attrs[attr]"> {{attr}}
+      </div>
+      {{items}}
     </form>
   </div>
 </template>
@@ -39,7 +34,7 @@ export default {
       },
       query: 'vue',
       item: undefined,
-      items: [],
+      items: [11730342 ],
       browsers: ['Internet Explorer', 'Firefox', 'Chrome', 'Opera', 'Safari'],
       getBrowsers: function(){
         return this.browsers
