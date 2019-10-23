@@ -2,15 +2,19 @@
   <div id="app">
     <form @submit.prevent="log('submit')">
 
-      <v-select v-model="items" as="name:id:id" from="https://api.github.com/search/repositories?q=%s" 
+      <v-select v-model="items" tagging as="name:id:id" from="https://api.github.com/search/repositories?q=%s" 
         parse="items" minlength=3 v-bind="attrs">
 
+        <template v-slot:option="{option}">
+            <img :src="option.raw.owner.avatar_url" alt="" width="20">
+            {{option.raw.id}}: <b>{{option.raw.name}}</b>
+        </template>
       </v-select>
 
-      <div v-for="(val, attr) in attrs">
+      <div v-for="(val, attr) in attrs" :key="attr">
         <input type="checkbox" v-model="attrs[attr]"> {{attr}}
       </div>
-      {{items}}
+
     </form>
   </div>
 </template>
@@ -33,7 +37,7 @@ export default {
         disabled: false,
       },
       query: 'vue',
-      item: undefined,
+      item: 11730342,
       items: [11730342 ],
       browsers: ['Internet Explorer', 'Firefox', 'Chrome', 'Opera', 'Safari'],
       getBrowsers: function(){

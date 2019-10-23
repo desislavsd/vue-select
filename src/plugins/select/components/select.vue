@@ -164,8 +164,8 @@ export default {
         
         validate: {
             type: Function,
-            default(){
-                let { q, $attrs } = this;
+            default(q){
+                let { $attrs } = this;
 
                 return  ( q || !$attrs.hasOwnProperty('minlength') ) && elMatches(this.$refs.inp, ':valid')
             }
@@ -223,7 +223,9 @@ export default {
          * whether options are primitive
          */
         isPrimitive(){ 
-            return !this.as_ || !Object.values(this.as_).some(Boolean)
+            let { as_ } = this;
+
+            return !as_ || !Object.values(as_).some(Boolean)
         },
         /**
          * whether values are insufficient to recreate an option object;
@@ -231,7 +233,9 @@ export default {
          * properties of the option object
          */
         isInsufficient(){
-            return this.as_ && this.as_[1]
+            let { as_ } = this;
+
+            return Boolean( as_.poor )
         },
         
         /**
@@ -243,11 +247,16 @@ export default {
 
             let as = Array.isArray(this.as) ? this.as : ( this.as || '' ).split(this.asSpec.rx);
             
-            as = this.asSpec.order
-                .map( (e, i) => as[i] ? typeof as[i] == 'function' ? as[i] : model(as[i]) : false )
-                .reduce( (m, e, i) => ({ ...m,  [this.asSpec.order[i]]: e }), {})
+            let poor = Boolean( as[0] && as[1] && (as[0] != as[1]) );
 
-            as.index = as.index || as.value || error('`index` field is required when working with non primitive options');
+            as = this.asSpec.order
+                .map( (e, i) => typeof as[i] == 'function' && as[i] || as[i] && model(as[i]) )
+                .reduce( (m, e, i) => ({
+                     ...m,  
+                     [this.asSpec.order[i]]: e 
+                }), { poor })
+
+            if(!as.index) error('`index` field is required when working with non primitive options');
 
             return as;
         },
@@ -323,10 +332,18 @@ export default {
             this.queue = null;
         },
 
-        options: 'syncValue',
+        options(options){
 
-        value_(tags){
-            this.$emit('update:tags', tags)
+            if(!options || !options.length) return;
+            this.syncValue();
+        },
+
+        value_: {
+            immediate: true,
+            handler(tags){
+
+                this.$emit('update:tags', tags)
+            }
         },
 
         filtered(){
@@ -335,7 +352,9 @@ export default {
         },
 
         q(query){
+
             if(this.isDynamic) this.options = [];
+
             this.debouncedSearch();
             this.$emit('update:query', query)
         },
@@ -365,10 +384,12 @@ export default {
         async search( force = false ){
             
             let { q } = this, queue;
-            
-            // proceed only if query is valid
-            if( !this.validate() ) return new Error(msg('Invalid query: ' + q));
 
+            if( typeof force == 'string' ) q = force;
+
+            // proceed only if query is valid
+            if( !this.validate(q) ) return new Error(msg('Invalid query: ' + q));
+            
             queue = this.queue = !force && this.queue && (!this.isDynamic || ( this.queue.q == q) )
                 ? this.queue // request is cached
                 : this.from_(q)
@@ -437,7 +458,7 @@ export default {
             
             let option = this.ofRaw(raw);
             
-            return option;
+            return Object.assign(option, { poor: as.poor });
         },
 
         /**
@@ -453,7 +474,7 @@ export default {
             
             as.label && as.label(raw, q)
             
-            return this.ofRaw(raw);
+            return Object.assign(this.ofRaw(raw), { poor: as.poor, new: true });
         },
 
         async select(option, fresh = false ){
@@ -666,8 +687,10 @@ export default {
             this.q = '';
         })
 
-        if( !this.isAsync || (this.value_.length && this.isInsufficient ))
-            this.search();
+        console.log(...this.value_.map( v => v.poor ));
+        
+        if( !this.isAsync || (this.value_.length && this.as_.poor ))
+            this.search(this.value_[0].label + '');
     }
 }
 
