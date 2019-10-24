@@ -2,7 +2,7 @@
   <div id="app">
     <form @submit.prevent="log('submit')">
 
-      <v-select v-model="items" tagging as="name:id:id" from="https://api.github.com/search/repositories?q=%s" 
+      <v-select v-model="item" tagging as="name:id:id" from="https://api.github.com/search/repositories?q=%s" 
         parse="items" minlength=3 v-bind="attrs">
 
         <template v-slot:option="{option}">
@@ -38,7 +38,7 @@ export default {
       },
       query: 'vue',
       item: 11730342,
-      items: [11730342 ],
+      items: [ 11730342, 24195339 ],
       browsers: ['Internet Explorer', 'Firefox', 'Chrome', 'Opera', 'Safari'],
       getBrowsers: function(){
         return this.browsers

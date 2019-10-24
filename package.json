@@ -20,21 +20,21 @@
     "*.js",
     "*.md"
   ],
-  "version": "0.3.4",
+  "version": "0.4.0",
   "license": "MIT",
   "private": false,
   "repository": {
     "type": "git",
-    "url": "git+https://github.com/desislavsd/vue-select.git"
+    "url": "https://github.com/desislavsd/vue-select.git"
   },
   "bugs": {
     "url": "https://github.com/desislavsd/vue-select/issues"
   },
-  "homepage": "https://github.com/desislavsd/vue-select#readme",
+  "homepage": "https://desislavsd.gitbook.io/vue-select/",
   "scripts": {
     "serve": "vue-cli-service serve",
     "build": "vue-cli-service build",
-    "build-lib": "vue-cli-service build --target lib --name vue-select ./src/plugins/select/index.js",
+    "build:lib": "vue-cli-service build --target lib --name vue-select ./src/plugins/select/index.js",
     "version": "npm version patch",
     "publish": "npm publish --access public",
     "lint": "vue-cli-service lint"
@@ -51,7 +51,8 @@
     "eslint-plugin-vue": "^5.0.0",
     "stylus": "^0.54.5",
     "stylus-loader": "^3.0.2",
-    "vue-template-compiler": "^2.5.21"
+    "vue": "^2.6.10",
+    "vue-template-compiler": "^2.6.10"
   },
   "eslintConfig": {
     "root": true,

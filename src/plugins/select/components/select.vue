@@ -341,7 +341,6 @@ export default {
         value_: {
             immediate: true,
             handler(tags){
-
                 this.$emit('update:tags', tags)
             }
         },
@@ -595,7 +594,9 @@ export default {
          */
         equals(a,b){
 
-            if(a.index === b.index) return true;
+            if( a.index === b.index ) return true;
+
+            if( a.index == b.index && [a.index, b.index].every(isset) ) return true;
             
             try {
                 return JSON.stringify(a.index) === JSON.stringify(b.index)
@@ -687,10 +688,8 @@ export default {
             this.q = '';
         })
 
-        console.log(...this.value_.map( v => v.poor ));
-        
         if( !this.isAsync || (this.value_.length && this.as_.poor ))
-            this.search(this.value_[0].label + '');
+            this.search(this.value_.map(e => e.label).join(','));
     }
 }
 

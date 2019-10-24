@@ -5,6 +5,7 @@ Vue.config.productionTip = false
 global.Vue = Vue
 
 import VueSelect from './plugins/select'
+// let VueSelect = require('!!../dist/vue-select.common.js').default
 
 Vue.use(VueSelect, {
   mixin: {

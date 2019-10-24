@@ -1,8 +1,9 @@
 import vSelect from './components/select'
+import vSelectOption from './components/option'
+import vSelectSelected from './components/selected'
+import vSelectLayout from './components/layout'
 
-export * from './utils'
-
-export { vSelect }
+export { vSelect, vSelectLayout, vSelectOption, vSelectSelected }
 
 let VueSelect;
 
@@ -15,7 +16,7 @@ export default VueSelect = {
         })
     },
 
-    vSelect,
+    vSelect, vSelectLayout, vSelectOption, vSelectSelected
 }
 
 if(typeof window != 'undefined' && typeof window.Vue != 'undefined')
