@@ -20,9 +20,8 @@
 -->
 <template>
     <Layout class="v-select" :class="classes" tabindex="-1" ref="layout"
-        @focus.native="$refs.inp.focus()"
         @mouseup.native.left="isMultiple && $refs.inp.focus()"
-        @focusin.native="checkFocus_()" 
+        @focusin.native="$refs.inp.focus() + checkFocus_()" 
         @focusout.native="checkFocus_()"
         @keydown.native.down.prevent="next()"
         @keydown.native.up.prevent="next(true)"
