@@ -46,9 +46,9 @@
         </template>
 
         <template v-slot:actions>
-            <button @mousedown="clear()" class="v-select-btn-clear"   type="button" tabindex="-1"></button>
+            <!-- <button @mousedown="clear()" class="v-select-btn-clear"   type="button" tabindex="-1"></button>
             <button @click="open()"      class="v-select-btn-dd"      type="button" tabindex="-1"></button>
-            <button                      class="v-select-btn-spinner" type="button" tabindex="-1"><slot name="spinner"/></button>
+            <button                      class="v-select-btn-spinner" type="button" tabindex="-1"><slot name="spinner"/></button> -->
         </template>
             
         <!-- OPTIONS -->
@@ -752,9 +752,10 @@ function VSelectOption(){
             min-width 0
             &[readonly]
                 cursor default
+        [class*="v-select-btn"], .v-select-inp
+            min-height: calc(var(--height) - var(--padd)*2 - 2px) // substract bar paddings and borders
         [class*="v-select-btn"]
             padding 0.2em 0.5em
-            min-height: calc(var(--height) - var(--padd)*2 - 2px) // substract bar paddings and borders
             background transparent
             border 1px solid transparent
             cursor pointer
