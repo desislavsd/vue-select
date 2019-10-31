@@ -781,8 +781,6 @@ function VSelectOption(){
                 font-size .8em
             &:not(:hover)
                 opacity 0.6
-        &.-loading .v-select-btn-dd
-            display none
         .v-select-btn-dd:before
                 content: ''
                 display: block;
@@ -795,6 +793,8 @@ function VSelectOption(){
             display none
         &.-opened .v-select-btn-dd 
             opacity .6
+        &.-loading .v-select-btn-dd
+            display none
 
         .v-select-list
             list-style none
