@@ -234,7 +234,7 @@ export default {
         isInsufficient(){
             let { as_ } = this;
 
-            return Boolean( as_.poor )
+            return Boolean( as_ && as_.poor )
         },
         
         /**
