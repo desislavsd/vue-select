@@ -448,6 +448,8 @@ export default {
          */
         ofValue(value){
 
+            let { isInsufficient } = this;
+
             if(this.isPrimitive) return this.ofRaw(value);
 
             let raw = value, as = this.as_;
@@ -456,13 +458,15 @@ export default {
             
             let option = this.ofRaw(raw);
             
-            return Object.assign(option, { poor: as.poor });
+            return Object.assign(option, { poor: isInsufficient });
         },
 
         /**
          * Construct v-select option from phrase
          */
         ofPhrase(q){
+
+            let { isInsufficient } = this;
 
             if(this.isPrimitive) return this.ofRaw(q);
 
@@ -472,7 +476,7 @@ export default {
             
             as.label && as.label(raw, q)
             
-            return Object.assign(this.ofRaw(raw), { poor: as.poor, new: true });
+            return Object.assign(this.ofRaw(raw), { poor: isInsufficient, new: true });
         },
 
         async select(option, fresh = false ){
@@ -681,13 +685,15 @@ export default {
     
     mounted(){
 
+        let { isInsufficient } = this;
+
         this.$on('select', () => {
             if(!this.isMultiple) this.close();//.blur();
             if( this.isDynamic ) this.close();
             this.q = '';
         })
 
-        if( !this.isAsync || (this.value_.length && this.as_.poor ))
+        if( !this.isAsync || (this.value_.length && isInsufficient ) )
             this.search(this.value_.map(e => e.label).join(','));
     }
 }
