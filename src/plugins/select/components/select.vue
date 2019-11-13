@@ -399,7 +399,7 @@ export default {
             let options = await queue;
 
             // disregard the request if it is no longer relevant
-            if( queue != this.queue || this.q != this.queue.q ) return;
+            if( !force && (queue != this.queue || this.q != this.queue.q) ) return;
             
             // avoid unnecessary update if the results is the same as the previous ( this would happen if `from` is an array )
             if( options == this.options ) return;
@@ -551,7 +551,7 @@ export default {
          * Calculates `value_` from model's value
          */
         syncValue(){
-            
+
             if(!isset(this.value)) return this.value_ = [];
 
             let options = this.options.concat(this.value_);

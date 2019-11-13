@@ -2,14 +2,10 @@
   <div id="app">
     <form @submit.prevent="log('submit')">
 
-      <v-select v-model="item" tagging as="name:id:id" from="https://api.github.com/search/repositories?q=%s" 
-        parse="items" minlength=3 v-bind="attrs">
+      <v-select v-model="selectedBrowsers" as="name:id:id" :from="browsers"  v-bind="attrs" />
+        <!-- from="https://api.github.com/search/repositories?q=%s"  -->
 
-        <template v-slot:option="{option}">
-            <img :src="option.raw.owner.avatar_url" alt="" width="20">
-            {{option.raw.id}}: <b>{{option.raw.name}}</b>
-        </template>
-      </v-select>
+      <pre>{{selectedBrowsers}}</pre>
 
       <div v-for="(val, attr) in attrs" :key="attr">
         <input type="checkbox" v-model="attrs[attr]"> {{attr}}
@@ -39,7 +35,14 @@ export default {
       query: 'vue',
       item: 11730342,
       items: [ 11730342, 24195339 ],
-      browsers: ['Internet Explorer', 'Firefox', 'Chrome', 'Opera', 'Safari'],
+      selectedBrowsers: [2,3],
+      browsers: [
+        {"id":1,"name":"Internet Explorer"},
+        {"id":2,"name":"Firefox"},
+        {"id":3,"name":"Chrome"},
+        {"id":4,"name":"Opera"},
+        {"id":5,"name":"Safari"}
+      ],
       getBrowsers: function(){
         return this.browsers
       }.bind(this)
