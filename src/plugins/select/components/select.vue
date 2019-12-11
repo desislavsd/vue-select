@@ -324,6 +324,10 @@ export default {
             immediate: true,
             handler(){
                 this.syncValue();
+
+                if(!this.isMultiple) this.close();//.blur();
+                if( this.isDynamic ) this.close();
+                this.q = '';
             }
         },
 
@@ -686,12 +690,6 @@ export default {
     mounted(){
 
         let { isInsufficient } = this;
-
-        this.$on('select', () => {
-            if(!this.isMultiple) this.close();//.blur();
-            if( this.isDynamic ) this.close();
-            this.q = '';
-        })
 
         if( !this.isAsync || (this.value_.length && isInsufficient ) )
             this.search(this.value_.map(e => e.label).join(','));
