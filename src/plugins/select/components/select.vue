@@ -189,6 +189,7 @@ export default {
             options: [],
             asSpec: { rx: /\s*[,:]\s*/, order: 'label:value:index'.split(':') },
             checkFocus_: debounce(10, this.checkFocus)
+            // internalState: !this.$listeners.input && !this.$options.propsData.hasOwnProperty('value'),
         }
     },
 
@@ -395,8 +396,6 @@ export default {
             queue = this.queue = !force && this.queue && (!this.isDynamic || ( this.queue.q == q) )
                 ? this.queue // request is cached
                 : this.from_(q)
-                    .then( res => this.parse_(res) )
-                    .then( res => res.map( option => this.ofRaw(option) ) )
             
             queue.q = q; // remeber what `q` was this request associated with
 
@@ -412,14 +411,16 @@ export default {
         },
         
         async from_(q){
-            let { from, fetch } = this;
+            let { from, fetch } = this, res;
 
-            if( Array.isArray(from) ) return from;
+            if( Array.isArray(from) ) res = from;
             // this.options = [];
             
-            if(typeof from == 'function') return await from(q)
+            else if(typeof from == 'function') res = await from(q)
             
-            return await fetch(q, from)
+            else res = await fetch(q, from);
+
+            return await this.parse_(res).map( option => this.ofRaw(option) )
         },
 
         /**
