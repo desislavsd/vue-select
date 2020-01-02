@@ -27,7 +27,7 @@
         @keydown.native.up.prevent="next(true)"
         @keydown.native.home.prevent="mark(0)"
         @keydown.native.end.prevent="mark(Infinity)"
-        @keydown.native.esc="~marked ? mark() : close()"
+        @keydown.native.esc.stop="~marked ? mark() : close()"
         @keydown.native.delete="onDelKey()"
         @keydown.native.enter="onKeyDownEnter"
         @mousedown.native.left="open()">
