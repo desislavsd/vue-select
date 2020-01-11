@@ -28,7 +28,7 @@
         @keydown.native.home.prevent="mark(0)"
         @keydown.native.end.prevent="mark(Infinity)"
         @keydown.native.esc.stop="~marked ? mark() : close()"
-        @keydown.native.delete="onDelKey()"
+        @keydown.native.delete="onKeyDel()"
         @keydown.native.enter="onKeyDownEnter"
         @mousedown.native.left="open()">
 
@@ -171,6 +171,8 @@ export default {
         },
 
         watchAttrs: {default(){ return ['required', 'disabled', 'readonly']}},
+
+        stateful: Boolean,
     },
 
     inheritAttrs: false,
@@ -323,12 +325,9 @@ export default {
     watch: {
         value: {
             immediate: true,
-            handler(){
-                this.syncValue();
-
-                if(!this.isMultiple) this.close();//.blur();
-                if( this.isDynamic ) this.close();
-                this.q = '';
+            handler(value){
+                this.value_ = this.parseValue(value)
+                this.onChange();
             }
         },
 
@@ -339,7 +338,8 @@ export default {
         options(options){
 
             if(!options || !options.length) return;
-            this.syncValue();
+            
+            this.value_ = this.parseValue(this.value_)
         },
 
         value_: {
@@ -383,6 +383,23 @@ export default {
     },
 
     methods: {
+
+        /**
+         * Updates the model value 
+         * handling both v-model & no v-model cases
+         */
+        set(value){
+
+            if( this.stateful ) {
+                this.value_ = isset(value) ? Array.isArray(value) ? value : [value] : [];
+                this.onChange();
+            }
+
+            if( isset(value) )
+                value = Array.isArray(value) ? value.map( v => v.value ) : value.value;
+
+            this.$emit('input',  value )
+        },
         
         async search( force = false ){
             
@@ -420,7 +437,7 @@ export default {
             
             else res = await fetch(q, from);
 
-            return await this.parse_(res).map( option => this.ofRaw(option) )
+            return (this.parse_(res) || []).map( option => this.ofRaw(option) )
         },
 
         /**
@@ -492,8 +509,7 @@ export default {
 
             // selecting already selected options will deselect them in multiple mode
             if( ~index ) 
-                return this.isMultiple ? this.deselect(index) : this//this.blur()
-
+                return this.isMultiple ? this.deselect(index) : this
             
             if( fresh ){
                 this.$emit('create', option);
@@ -510,14 +526,10 @@ export default {
                 }
             }
             
-            option = option.value
-
             if(this.isMultiple) 
-                option = this.value.concat(option)
+                option = this.value_.concat(option)
             
-            this.$emit('input',  option )
-
-            // this.isMultiple || this.blur()
+            this.set(option);
         },
 
         /**
@@ -528,11 +540,11 @@ export default {
 
             if(!this.isMultiple) return this.clear();
 
-            let value = [...this.value];
+            let value = [...this.value_];
 
             value.splice(index,1);
 
-            this.$emit('input', value)
+            this.set(value)
         },
 
         /**
@@ -540,7 +552,7 @@ export default {
          */
         clear(){
 
-            this.$emit('input', this.isMultiple ? [] : undefined)
+            this.set(this.isMultiple ? [] : undefined)
         },
         
         /**
@@ -553,16 +565,18 @@ export default {
         },
 
         /**
-         * Calculates `value_` from model's value
+         * Maps provided value to exisiting in the options list
+         * vSelectOptions if possible
          */
-        syncValue(){
+        parseValue(value, options){
 
-            if(!isset(this.value)) return this.value_ = [];
+            if(!isset(value)) return [];
 
-            let options = this.options.concat(this.value_);
-            
-            return this.value_ = [].concat(this.value).map( val => this.ofValue(val) )
-                .map( val => options.find( option => this.equals(val, option) ) || val );
+            options = options || this.options.concat(this.value_);
+
+            return [].concat(value)
+                .map( v => v instanceof VSelectOption ? v : this.ofValue(v) )
+                .map( v => options.find( o => this.equals(v, o)) || v )
         },
 
         /**
@@ -643,16 +657,12 @@ export default {
 
         checkFocus(){
 
-            let focus = elMatches(this.$el, ':focus') || !!this.$el.querySelector(':focus');
+            this.flags.focused = elMatches(this.$el, ':focus') || !!this.$el.querySelector(':focus');
 
-            if( this.flags.focused != focus ) {
-                this.flags.focused = focus;
-            }
-            
             return this;
         },
 
-        onDelKey(){
+        onKeyDel(){
 
             if(this.q) return;
 
@@ -684,8 +694,11 @@ export default {
 
             this.select(this.ofPhrase(this.q));
         },
-
-
+        onChange(){
+            if(!this.isMultiple) this.close();
+            if( this.isDynamic ) this.close();
+            this.q = '';
+        }
     },
     
     mounted(){
