@@ -35,7 +35,7 @@
         <!-- SELECTED -->
         <template v-slot:selected>
             <Selected v-for="(option,i) in value_" :key="option.index" v-bind="{ option, state, index: i, select: this }" @mouseup.left.native="deselect(i)" class="v-select-btn v-select-selected">
-                <slot name="selected" v-bind="{ option, state, index: i, select: this }"/>
+                <slot v-for="slot in ['both', 'selected']" :name="slot" v-bind="{ option, state, index: i, select: this }"/>
             </Selected>
         </template>
         
@@ -53,7 +53,7 @@
         <!-- OPTIONS -->
         <template v-slot:options>
             <Option v-for="(option, i) in filtered" :key="option.index" :ref="'option' + i" v-bind="{ option, state, index: i, select: this }" @mouseup.left.native="select(option)" class="v-select-option">
-                <slot name="option" v-bind="{ option, state, index: i, select: this }" />
+                <slot v-for="slot in ['both', 'option']" :name="slot" v-bind="{ option, state, index: i, select: this }" />
             </Option>
         </template>
         
@@ -316,7 +316,7 @@ export default {
             return !q ? -1 : this.filtered.findIndex( e => (e.label + '').toLowerCase() == q )
         },
         layoutSlots(){
-            let skip = 'selected input actions options spinner'.split(' ');
+            let skip = 'selected options both input actions spinner'.split(' ');
 
             return Object.keys(this.$scopedSlots).filter( key => !skip.includes(key) )
         }
