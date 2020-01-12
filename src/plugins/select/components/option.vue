@@ -1,11 +1,13 @@
-<template>
-    <a class="v-select-option" :class="classes"><slot>{{option.label}}</slot></a>
-</template>
-
 <script>
+
 export default {
     name: 'Option',
-    props: ['option', 'index', 'state'],
+    props: {
+        option: {},
+        index: {},
+        state: {},
+        tag: { default: 'span' }
+    },
     computed: {
         classes(){
             return {
@@ -13,19 +15,25 @@ export default {
                 '-selected': this.state.selected.includes(this.option),
             }
         }
-    }
+    },
+    render(h){
+
+        let { classes, tag, option } = this;
+
+        let sloted = this.$slots.default,
+            single = sloted && sloted.length == 1 && sloted[0];
+
+        if(single && single.tag){
+
+            single.data = single.data || {};
+            
+            single.data.class = Object.assign({}, single.data.class, classes);
+
+            return single
+        }
+            
+        return h(tag, {class: classes}, sloted || [option.label])
+    },
 }
+
 </script>
-<style lang="stylus">
-    .v-select-option
-        display flex
-        align-items center
-        padding .3em 0.5em
-        cursor pointer
-        &.-marked 
-            background rgba(0,0,0,.05)
-        &:hover
-            background rgba(0,0,0,.03)
-        &.-selected
-            opacity 0.5
-</style>

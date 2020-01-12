@@ -34,7 +34,7 @@
 
         <!-- SELECTED -->
         <template v-slot:selected>
-            <Selected v-for="(option,i) in value_" :key="option.index" v-bind="{ option, state, index: i, select: this }" @mouseup.left.native="deselect(i)">
+            <Selected v-for="(option,i) in value_" :key="option.index" v-bind="{ option, state, index: i, select: this }" @mouseup.left.native="deselect(i)" class="v-select-btn v-select-selected">
                 <slot name="selected" v-bind="{ option, state, index: i, select: this }"/>
             </Selected>
         </template>
@@ -52,7 +52,7 @@
             
         <!-- OPTIONS -->
         <template v-slot:options>
-            <Option v-for="(option, i) in filtered" :key="option.index" :ref="'option' + i" v-bind="{ option, state, index: i, select: this }" @mouseup.left.native="select(option)">
+            <Option v-for="(option, i) in filtered" :key="option.index" :ref="'option' + i" v-bind="{ option, state, index: i, select: this }" @mouseup.left.native="select(option)" class="v-select-option">
                 <slot name="option" v-bind="{ option, state, index: i, select: this }" />
             </Option>
         </template>
@@ -69,7 +69,7 @@
 import { mid, fetchAdapter, model, isset, debounce, me, error, msg, elMatches } from '../utils'
 
 import Option from './option';
-import Selected from './selected'
+import Selected from './selected';
 import Layout from './layout'
 
 export default {
@@ -738,11 +738,44 @@ function VSelectOption(){
         button, input
             font inherit
             text-align left
+
+        // options
+        .v-select-option
+            display flex
+            align-items center
+            padding .3em 0.5em
+            cursor pointer
+            &.-marked 
+                background rgba(0,0,0,.05)
+            &:hover
+                background rgba(0,0,0,.03)
+            &.-selected
+                opacity 0.5
+
+        // selected
+        .v-select-selected
+            display flex
+            align-items center
+            position absolute
+            overflow hidden
+            text-overflow ellipsis
+        &.-multiple .v-select-selected
+            background var(--c-theme)
+            border-color rgba(0,0,0,.1)
+            position static
+        &.-searching:not(.-multiple) .v-select-selected
+            opacity 0
+        &:not(.-multiple):not(.-searching) 
+            &.-opened, &.-focused
+                .v-select-selected
+                    opacity 0.6
+                    
         .v-select-selected
             margin-right: var(--padd)
             margin-bottom: var(--padd)
             &:first-of-type
                 border-radius: var(--radius) 0 0 var(--radius)
+        // bar
         .v-select-bar
             position relative
             height 100%
