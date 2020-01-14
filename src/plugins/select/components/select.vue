@@ -698,7 +698,8 @@ export default {
             if(!this.isMultiple) this.close();
             if( this.isDynamic ) this.close();
             this.q = '';
-        }
+            this.$emit('change', this.isMultiple ? setRaw(this.value_) : this.value_[0] )
+        },
     },
     
     mounted(){
@@ -712,6 +713,12 @@ export default {
 
 function VSelectOption(){
     Object.assign(this, ...arguments)
+}
+function setRaw(arr){
+
+    return  arr = [...arr], 
+            arr.raw = arr.map( e => e.value ), 
+            arr
 }
 </script>
 <style lang="stylus">
