@@ -173,6 +173,13 @@ export default {
         watchAttrs: {default(){ return ['required', 'disabled', 'readonly']}},
 
         stateful: Boolean,
+
+        find: { 
+            type: [Function, Boolean], 
+            default(vals){ 
+                return this.from_( vals.filter(e => e.poor).map(e => e.label).join(',') )
+            } 
+        }
     },
 
     inheritAttrs: false,
@@ -191,7 +198,6 @@ export default {
             options: [],
             asSpec: { rx: /\s*[,:]\s*/, order: 'label:value:index'.split(':') },
             checkFocus_: debounce(10, this.checkFocus)
-            // internalState: !this.$listeners.input && !this.$options.propsData.hasOwnProperty('value'),
         }
     },
 
@@ -325,9 +331,21 @@ export default {
     watch: {
         value: {
             immediate: true,
-            handler(value){
+            async handler(value){
+
                 this.value_ = this.parseValue(value)
+
                 this.onChange();
+
+                if( !this.value_.some( e => e.poor) ) return;
+
+                if( !this.isDynamic ) return this.search();
+
+                if( !this.find ) return;
+
+                let options = await this.find(this.value_);
+
+                this.value_ = this.parseValue(this.value_, options);
             }
         },
 
@@ -403,7 +421,7 @@ export default {
         
         async search( force = false ){
             
-            let { q } = this, queue;
+            let { q } = this, queue, options;
 
             if( typeof force == 'string' ) q = force;
 
@@ -414,15 +432,15 @@ export default {
                 ? this.queue // request is cached
                 : this.from_(q)
             
-            queue.q = q; // remeber what `q` was this request associated with
+            queue.q = q; // remember what `q` was this request associated with
 
-            let options = await queue;
+            try { options = await queue } catch ( ex ) {
+                if(queue == this.queue) this.queue = null;
+                throw ex;
+            }
 
             // disregard the request if it is no longer relevant
-            if( !force && (queue != this.queue || this.q != this.queue.q) ) return;
-            
-            // avoid unnecessary update if the results is the same as the previous ( this would happen if `from` is an array )
-            if( options == this.options ) return;
+            if( (queue != this.queue) || (this.q != this.queue.q) ) return;
             
             this.options = options;
         },
@@ -701,14 +719,6 @@ export default {
             this.$emit('change', this.isMultiple ? setRaw(this.value_) : this.value_[0] )
         },
     },
-    
-    mounted(){
-
-        let { isInsufficient } = this;
-
-        if( !this.isAsync || (this.value_.length && isInsufficient ) )
-            this.search(this.value_.map(e => e.label).join(','));
-    }
 }
 
 function VSelectOption(){
