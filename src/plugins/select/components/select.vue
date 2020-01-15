@@ -166,7 +166,7 @@ export default {
             default(q){
                 let { $attrs } = this;
 
-                return  ( q || !$attrs.hasOwnProperty('minlength') ) && elMatches(this.$refs.inp, ':valid')
+                return  ( q || !$attrs.hasOwnProperty('minlength') ) && (!this.$refs.inp || elMatches(this.$refs.inp, ':valid'))
             }
         },
 
@@ -179,7 +179,10 @@ export default {
             default(vals){ 
                 return this.from_( vals.filter(e => e.poor).map(e => e.label).join(',') )
             } 
-        }
+        },
+        closeOnSelect: {type: Boolean, default: undefined },
+        clearOnSelect: {type: Boolean, default: undefined },
+        clearOnClose: {type: Boolean, default: undefined },
     },
 
     inheritAttrs: false,
@@ -395,9 +398,11 @@ export default {
         },
 
         'flags.focused'(focus){
-            this.$emit(focus ? 'focus' : 'blur');
-            return focus ? this.open() : this.close(true);
-        }
+            this.$emit(focus ? 'focus' : 'blur', this);
+            return focus ? this.open() : this.close(isset(this.clearOnClose) ? this.clearOnClose : true);
+        },
+
+        'flags.opened'(opened){ this.$emit(opened ? 'open' : 'close', this); }
     },
 
     methods: {
@@ -653,7 +658,7 @@ export default {
 
         close(clearQuery){
             this.flags.opened = false; 
-            if(clearQuery || !this.isMultiple) this.q = '';
+            if(clearQuery || (isset(this.clearOnSelect) ? this.clearOnSelect : !this.isMultiple) ) this.q = '';
             return this; 
         },
 
@@ -713,9 +718,8 @@ export default {
             this.select(this.ofPhrase(this.q));
         },
         onChange(){
-            if(!this.isMultiple) this.close();
-            if( this.isDynamic ) this.close();
-            this.q = '';
+            if(isset(this.closeOnSelect) ? this.closeOnSelect : !this.isMultiple || this.isDynamic ) this.close();
+            if(isset(this.clearOnSelect) ? this.clearOnSelect : 1) this.q = '';
             this.$emit('change', this.isMultiple ? setRaw(this.value_) : this.value_[0] )
         },
     },
