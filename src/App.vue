@@ -8,16 +8,27 @@
         <li>close dropdown on value change!</li>
         <li>prop prefill - function to process insufficient values that defaults to search('id1,id2..')</li>
       </ul>
-      <v-select v-model="selectedBrowser" as="name:id:id" :from="browsers"  v-bind="attrs" />
-      <!-- <v-select as="name:id:id" :from="browsers" multiple  v-bind="attrs" /> -->
+      <!-- <v-select v-model="items" as="name:id:id" :from="browsers" @change="log($event)"  v-bind="attrs">
+        <template v-slot:both="{ option }">
+          {{option.label}}
+        </template>
+      </v-select> -->
+      <!-- <v-select v-model="item" as="name:id:id" minlength="3" from="https://api.github.com/search/repositories?q=%s" parse="items"/> -->
+      <v-select :value="selectedBrowser" stateful as="name:id:id" :from="getBrowsers">
+        <template v-slot:both="{ option: { label }}">
+          <strong>{{label}}</strong>
+        </template>
+      </v-select>
         <!-- from="https://api.github.com/search/repositories?q=%s"  -->
 
       <pre>{{selectedBrowsers}}</pre>
 
+      <button @click.prevent="selectedBrowser = 2">Set browser</button>
       <div v-for="(val, attr) in attrs" :key="attr">
         <input type="checkbox" v-model="attrs[attr]"> {{attr}}
       </div>
 
+      <label for=""> <input type="checkbox" v-model="error"> Error</label>
     </form>
   </div>
 </template>
@@ -43,7 +54,8 @@ export default {
       item: 11730342,
       items: [ 11730342, 24195339 ],
       selectedBrowsers: [2,3],
-      selectedBrowser: 2,
+      selectedBrowser: undefined,//2,
+      error: false,
       browsers: [
         {"id":1,"name":"Internet Explorer"},
         {"id":2,"name":"Firefox"},
@@ -52,9 +64,14 @@ export default {
         {"id":5,"name":"Safari"}
       ],
       getBrowsers: function(){
+        if(this.error) throw 1
+        console.log('got browsers');
+        
         return this.browsers
-      }.bind(this)
+      }.bind(this),
     }
+  },
+  methods: {
   },
 }
 </script>

@@ -6,9 +6,12 @@ import vSelectLayout from './components/layout'
 export { vSelect, vSelectLayout, vSelectOption, vSelectSelected }
 
 let VueSelect;
+import { version } from '@/../package.json'
 
 export default VueSelect = {
 
+    version, 
+    
     install(Vue, { name = 'vSelect', mixin = {} } = {} ){
 
         Vue.component(name, {
