@@ -45,7 +45,7 @@
         </template>
 
         <template v-slot:actions>
-            <button @mousedown="clear()" class="v-select-btn-clear"   type="button" tabindex="-1"></button>
+            <button @mouseup="clear()" class="v-select-btn-clear"   type="button" tabindex="-1"></button>
             <button @click="open()"      class="v-select-btn-dd"      type="button" tabindex="-1"></button>
             <button                      class="v-select-btn-spinner" type="button" tabindex="-1"><slot name="spinner"/></button>
         </template>
